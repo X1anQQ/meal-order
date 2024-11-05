@@ -152,14 +152,65 @@ const InputScreen = () => (
 );
 
   // 訂餐選擇畫面
-  const ConfirmScreen = () => (
+const ConfirmScreen = () => {
+  const [updateHabit, setUpdateHabit] = useState(false);
+
+  // 修改提交函數
+  const handleSubmit = async (choice) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          employeeId,
+          order: choice === 'yes',
+          updateHabit: updateHabit,  // 添加更新習慣的標記
+          date: new Date().toLocaleDateString('zh-TW')
+        })
+      });
+      
+      // 儲存今天的選擇
+      const today = new Date().toLocaleDateString('zh-TW');
+      const key = `orderChoice_${employeeId}_${today}`;
+      localStorage.setItem(key, choice);
+      setTodayChoice(choice);
+      
+      setStep('success');
+    } catch (error) {
+      alert('提交失敗，請稍後再試');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
     <div className="text-center p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">今日訂餐</h1>
         <p className="text-xl text-gray-600">工號：{employeeId}</p>
-        <p className="text-lg text-gray-500 mb-2">
+        <p className="text-lg text-gray-500 mb-4">
           {new Date().toLocaleDateString('zh-TW')}
         </p>
+
+        {/* 更新習慣的選項 */}
+        <div className="mb-6 p-4 bg-white rounded-xl shadow-sm">
+          <button
+            onClick={() => setUpdateHabit(!updateHabit)}
+            className="flex items-center justify-center w-full p-4 text-xl rounded-lg hover:bg-gray-50"
+          >
+            <div className={`w-8 h-8 mr-4 rounded-lg border-2 flex items-center justify-center
+              ${updateHabit ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}
+            >
+              {updateHabit && <Check className="w-6 h-6 text-white" />}
+            </div>
+            <span className="text-xl font-bold">將此次選擇設為預設習慣</span>
+          </button>
+        </div>
+
         <button
           onClick={() => {
             localStorage.removeItem('employeeId');
@@ -167,7 +218,7 @@ const InputScreen = () => (
             setShowLetterPad(true);
             setStep('input');
           }}
-          className="text-blue-500 underline mt-2"
+          className="text-blue-500 underline mt-2 text-lg"
         >
           更換工號
         </button>
@@ -175,33 +226,34 @@ const InputScreen = () => (
 
       <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto">
         <button
-          onClick={() => submitOrder('yes')}
+          onClick={() => handleSubmit('yes')}
           disabled={isSubmitting}
-          className="p-10 bg-green-500 text-white rounded-2xl flex flex-col items-center hover:bg-green-600 disabled:opacity-50"
+          className="p-12 bg-green-500 text-white rounded-2xl flex flex-col items-center hover:bg-green-600 disabled:opacity-50"
         >
           {isSubmitting ? (
-            <Loader2 className="w-16 h-16 animate-spin mb-4" />
+            <Loader2 className="w-20 h-20 animate-spin mb-4" />
           ) : (
-            <Check size={60} className="mb-4" />
+            <Check size={80} className="mb-4" />
           )}
-          <span className="text-2xl font-bold">要訂餐</span>
+          <span className="text-3xl font-bold">要訂餐</span>
         </button>
 
         <button
-          onClick={() => submitOrder('no')}
+          onClick={() => handleSubmit('no')}
           disabled={isSubmitting}
-          className="p-10 bg-red-500 text-white rounded-2xl flex flex-col items-center hover:bg-red-600 disabled:opacity-50"
+          className="p-12 bg-red-500 text-white rounded-2xl flex flex-col items-center hover:bg-red-600 disabled:opacity-50"
         >
           {isSubmitting ? (
-            <Loader2 className="w-16 h-16 animate-spin mb-4" />
+            <Loader2 className="w-20 h-20 animate-spin mb-4" />
           ) : (
-            <X size={60} className="mb-4" />
+            <X size={80} className="mb-4" />
           )}
-          <span className="text-2xl font-bold">不訂餐</span>
+          <span className="text-3xl font-bold">不訂餐</span>
         </button>
       </div>
     </div>
   );
+};
 
   // 已提交過的畫面
   const AlreadySubmittedScreen = () => (
