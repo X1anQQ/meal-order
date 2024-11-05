@@ -71,86 +71,85 @@ function App() {
   );
 
   // 工號輸入畫面
-  const InputScreen = () => (
-    <div className="text-center p-6">
-      <h1 className="text-3xl font-bold mb-8">請輸入工號</h1>
-      <div className="mb-8">
-        <input
-          type="text"
-          value={employeeId}
-          readOnly
-          className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
-          style={{ letterSpacing: '0.5em' }}
-        />
-      </div>
+const InputScreen = () => (
+  <div className="text-center p-6">
+    <h1 className="text-3xl font-bold mb-8">請輸入工號</h1>
+    <div className="mb-8">
+      <input
+        type="text"
+        value={employeeId}
+        readOnly
+        className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
+        style={{ letterSpacing: '0.5em' }}
+      />
+    </div>
 
-      {showLetterPad ? (
-        <div className="grid grid-cols-7 gap-2 mx-auto max-w-xl mb-4">
-          {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-            'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'].map(letter => (
-            <button
-              key={letter}
-              onClick={() => {
-                if (employeeId.length === 0) {
-                  setEmployeeId(letter);
-                  setShowLetterPad(false);
-                }
-              }}
-              className="p-4 text-xl font-bold rounded-lg bg-white shadow hover:bg-gray-50 disabled:opacity-50"
-              disabled={employeeId.length > 0}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-            <button
-              key={num}
-              onClick={() => setEmployeeId(prev => prev + num)}
-              className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
-            >
-              {num}
-            </button>
-          ))}
+    {showLetterPad ? (
+      <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
+        {['A', 'B', 'C', 'D', 'E', 'F', 'H'].map(letter => (
           <button
+            key={letter}
             onClick={() => {
-              const newId = employeeId.slice(0, -1);
-              setEmployeeId(newId);
-              if (newId.length === 0) {
-                setShowLetterPad(true);
+              if (employeeId.length === 0) {
+                setEmployeeId(letter);
+                setShowLetterPad(false);
               }
             }}
-            className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow"
+            className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50"
+            disabled={employeeId.length > 0}
           >
-            退格
+            {letter}
           </button>
+        ))}
+      </div>
+    ) : (
+      <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
           <button
-            onClick={() => setEmployeeId(prev => prev + '0')}
+            key={num}
+            onClick={() => setEmployeeId(prev => prev + num)}
             className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
           >
-            0
+            {num}
           </button>
-          <button
-            onClick={() => {
-              if (employeeId.length >= 2) {
-                localStorage.setItem('employeeId', employeeId);
-                setStep('confirm');
-              }
-            }}
-            className={`p-6 text-xl font-bold rounded-xl shadow ${
-              employeeId.length >= 2 
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-300 text-gray-500'
-            }`}
-          >
-            確認
-          </button>
-        </div>
-      )}
-    </div>
-  );
+        ))}
+        <button
+          onClick={() => {
+            const newId = employeeId.slice(0, -1);
+            setEmployeeId(newId);
+            if (newId.length === 0) {
+              setShowLetterPad(true);
+            }
+          }}
+          className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow"
+        >
+          退格
+        </button>
+        <button
+          onClick={() => setEmployeeId(prev => prev + '0')}
+          className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
+        >
+          0
+        </button>
+        <button
+          onClick={() => {
+            if (employeeId.length >= 2) {
+              localStorage.setItem('employeeId', employeeId);
+              setStep('confirm');
+            }
+          }}
+          className={`p-6 text-xl font-bold rounded-xl shadow ${
+            employeeId.length >= 2 
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-300 text-gray-500'
+          }`}
+        >
+          確認
+        </button>
+      </div>
+    )}
+  </div>
+);
 
   // 訂餐選擇畫面
   const ConfirmScreen = () => (
