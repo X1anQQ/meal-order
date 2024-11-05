@@ -1,0 +1,19 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 優化手機按鈕點擊 */
+button {
+  touch-action: manipulation;
+}
