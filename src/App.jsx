@@ -16,16 +16,18 @@ function App() {
 
   useEffect(() => {
     checkOrderTime(); // 新增這行
+    const hasVerified = localStorage.getItem('hasVerified'); // 只檢查是否驗證過
     const savedId = localStorage.getItem('employeeId');
-    const hasVerified = localStorage.getItem('hasVerified'); // 新增驗證狀態檢查
-    if (savedId) {
-      setEmployeeId(savedId);
-        if (hasVerified) {
-          checkTodaySubmission(savedId);
-        } else {
-          setStep('pin');
-        }
+   
+    if (!hasVerified) {
+      // 如果從未驗證過，進入 PIN 畫面
+      setStep('pin');
+    } else if (savedId) {
+      // 已驗證過且有儲存工號，檢查今日訂餐狀態
+      setEmployeeId(savedId);//儲存登入
+      checkTodaySubmission(savedId);
     } else {
+      // 已驗證過但沒有工號，進入輸入工號畫面
       setStep('input');
     }
 
@@ -258,7 +260,7 @@ const ConfirmScreen = () => {
         <button
           onClick={() => {
             localStorage.removeItem('employeeId');
-            localStorage.removeItem('hasVerified'); // 新增這行，清除驗證狀態
+
             setEmployeeId('');
             setShowLetterPad(true);
             setStep('input');
@@ -352,12 +354,12 @@ const ConfirmScreen = () => {
         <button
           onClick={() => {
             if (pin === DEFAULT_PIN) {
-              localStorage.setItem('hasVerified', 'true'); // 新增這行，記錄驗證狀態
+              localStorage.setItem('hasVerified', 'true'); // 記錄裝置已驗證
               localStorage.setItem('employeeId', employeeId);
               setStep('confirm');
             } else {
-              alert('密碼錯誤');
-              setPin('');
+                alert('密碼錯誤');
+                setPin('');
             }
           }}
           className={`p-6 text-xl font-bold rounded-xl shadow col-span-2 ${
@@ -385,7 +387,7 @@ const ConfirmScreen = () => {
       <button
         onClick={() => {
           localStorage.removeItem('employeeId');
-          localStorage.removeItem('hasVerified'); // 新增這行，清除驗證狀態
+          
           setEmployeeId('');
           setShowLetterPad(true);
           setStep('input');
