@@ -166,7 +166,7 @@ const InputScreen = () => (
           onClick={() => {
             if (employeeId.length >= 2) {
               localStorage.setItem('employeeId', employeeId);
-              checkTodaySubmission(employeeId);
+              setStep('confirm');
             }
           }}
           className={`p-6 text-xl font-bold rounded-xl shadow ${
