@@ -405,6 +405,9 @@ const ConfirmScreen = () => {
       <div className="bg-green-100 p-8 rounded-2xl mb-8">
         <h1 className="text-2xl font-bold mb-4">訂餐完成！</h1>
         <p className="text-xl mb-2">工號：{employeeId}</p>
+        <p className="text-xl">
+          您今天已經選擇：{todayChoice === 'yes' ? '要訂餐' : '不訂餐'}
+        </p>
       </div>
 
       <button
