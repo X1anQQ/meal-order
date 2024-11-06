@@ -312,12 +312,14 @@ const ConfirmScreen = () => {
         <p className="text-xl">每日早上 05:00 - 10:30</p>
       </div>
       
+      {/* 
       <button
         onClick={() => setStep('input')}
         className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs"
       >
         返回
       </button>
+      */}
     </div>
   );
 
