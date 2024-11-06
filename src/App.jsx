@@ -384,7 +384,7 @@ const ConfirmScreen = () => {
           您今天已經選擇：{todayChoice === 'yes' ? '要訂餐' : '不訂餐'}
         </p>
       </div>
-      {!isOrderTime && (
+      {isOrderTime && (
         <>
           <button
             onClick={() => {
