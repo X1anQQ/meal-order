@@ -17,9 +17,14 @@ function App() {
   useEffect(() => {
     checkOrderTime(); // 新增這行
     const savedId = localStorage.getItem('employeeId');
+    const hasVerified = localStorage.getItem('hasVerified'); // 新增驗證狀態檢查
     if (savedId) {
       setEmployeeId(savedId);
-      checkTodaySubmission(savedId);
+        if (hasVerified) {
+          checkTodaySubmission(savedId);
+        } else {
+          setStep('pin');
+        }
     } else {
       setStep('input');
     }
@@ -65,6 +70,7 @@ function App() {
         body: JSON.stringify({
           employeeId,
           order: choice === 'yes',
+          isVeg: isVeg && choice === 'yes', // 新增這行
           date: new Date().toLocaleDateString('zh-TW')
         })
       });
@@ -176,6 +182,7 @@ const ConfirmScreen = () => {
   if (!isOrderTime) {
     return <OutOfOrderTimeScreen />;
   }
+  const [isVeg, setIsVeg] = useState(false);
   const [updateHabit, setUpdateHabit] = useState(false);
 
   // 修改提交函數
@@ -191,6 +198,7 @@ const ConfirmScreen = () => {
         body: JSON.stringify({
           employeeId,
           order: choice === 'yes',
+          isVeg: isVeg && choice === 'yes', // 只有在要訂餐時才傳送素食選項
           updateHabit: updateHabit,  // 添加更新習慣的標記
           date: new Date().toLocaleDateString('zh-TW')
         })
@@ -218,7 +226,20 @@ const ConfirmScreen = () => {
         <p className="text-lg text-gray-500 mb-4">
           {new Date().toLocaleDateString('zh-TW')}
         </p>
-
+        {/* 素食選項 */}
+        <div className="mb-6 p-4 bg-white rounded-xl shadow-sm">
+          <button
+            onClick={() => setIsVeg(!isVeg)}
+            className="flex items-center justify-center w-full p-4 text-xl rounded-lg hover:bg-gray-50"
+          >
+            <div className={`w-8 h-8 mr-4 rounded-lg border-2 flex items-center justify-center
+              ${isVeg ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}
+            >
+              {isVeg && <Check className="w-6 h-6 text-white" />}
+            </div>
+            <span className="text-xl font-bold">素食餐點</span>
+          </button>
+        </div>
         {/* 更新習慣的選項 */}
         <div className="mb-6 p-4 bg-white rounded-xl shadow-sm">
           <button
@@ -237,6 +258,7 @@ const ConfirmScreen = () => {
         <button
           onClick={() => {
             localStorage.removeItem('employeeId');
+            localStorage.removeItem('hasVerified'); // 新增這行，清除驗證狀態
             setEmployeeId('');
             setShowLetterPad(true);
             setStep('input');
@@ -330,6 +352,7 @@ const ConfirmScreen = () => {
         <button
           onClick={() => {
             if (pin === DEFAULT_PIN) {
+              localStorage.setItem('hasVerified', 'true'); // 新增這行，記錄驗證狀態
               localStorage.setItem('employeeId', employeeId);
               setStep('confirm');
             } else {
@@ -362,6 +385,7 @@ const ConfirmScreen = () => {
       <button
         onClick={() => {
           localStorage.removeItem('employeeId');
+          localStorage.removeItem('hasVerified'); // 新增這行，清除驗證狀態
           setEmployeeId('');
           setShowLetterPad(true);
           setStep('input');
