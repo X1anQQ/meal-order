@@ -10,7 +10,7 @@ function App() {
   const [isOrderTime, setIsOrderTime] = useState(false);
   const [pin, setPin] = useState('');
   //設定PIN碼安全性
-  const ALLOWED_LETTERS = ['A', 'C', 'E', 'H', 'J', 'L', 'M', 'O'];
+  const ALLOWED_LETTERS = ['A', 'E', 'C', 'H', 'J', 'L', 'M', 'O'];
   const DEFAULT_PIN = 'ECHO';
 
 
@@ -305,7 +305,7 @@ const ConfirmScreen = () => {
           value={pin}
           readOnly
           className="text-4xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
-          placeholder=""
+          placeholder="公司名稱"
         />
       </div>
   
