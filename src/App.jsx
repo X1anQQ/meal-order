@@ -7,8 +7,15 @@ function App() {
   const [showLetterPad, setShowLetterPad] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [todayChoice, setTodayChoice] = useState(null);
+  const [isOrderTime, setIsOrderTime] = useState(false);
+  const [pin, setPin] = useState('');
+  //設定PIN碼安全性
+  const ALLOWED_LETTERS = ['A', 'C', 'E', 'H', 'J', 'L', 'M', 'O'];
+  const DEFAULT_PIN = 'ECHO';
+
 
   useEffect(() => {
+    checkOrderTime(); // 新增這行
     const savedId = localStorage.getItem('employeeId');
     if (savedId) {
       setEmployeeId(savedId);
@@ -16,7 +23,20 @@ function App() {
     } else {
       setStep('input');
     }
+
+    // 新增定時檢查
+    const timer = setInterval(checkOrderTime, 60000);
+    return () => clearInterval(timer);
   }, []);
+
+    // 新增這個函數
+  const checkOrderTime = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = hours + minutes / 60;
+    setIsOrderTime(currentTime >= 5 && currentTime <= 10.5);
+  };
 
   // 檢查今天是否已經提交
   const checkTodaySubmission = async (id) => {
@@ -134,8 +154,7 @@ const InputScreen = () => (
         <button
           onClick={() => {
             if (employeeId.length >= 2) {
-              localStorage.setItem('employeeId', employeeId);
-              setStep('confirm');
+              setStep('pin');
             }
           }}
           className={`p-6 text-xl font-bold rounded-xl shadow ${
@@ -153,6 +172,10 @@ const InputScreen = () => (
 
   // 訂餐選擇畫面
 const ConfirmScreen = () => {
+  // 在最上方加入時間檢查
+  if (!isOrderTime) {
+    return <OutOfOrderTimeScreen />;
+  }
   const [updateHabit, setUpdateHabit] = useState(false);
 
   // 修改提交函數
@@ -254,7 +277,77 @@ const ConfirmScreen = () => {
     </div>
   );
 };
+  const OutOfOrderTimeScreen = () => (//非訂餐時間段
+    <div className="text-center p-6">
+      <div className="bg-yellow-100 p-8 rounded-2xl mb-8">
+        <h1 className="text-2xl font-bold mb-4">非訂餐時間</h1>
+        <p className="text-xl mb-2">訂餐時間為：</p>
+        <p className="text-xl">每日早上 05:00 - 10:30</p>
+      </div>
+      
+      <button
+        onClick={() => setStep('input')}
+        className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs"
+      >
+        返回
+      </button>
+    </div>
+  );
 
+  const PinInputScreen = () => (//設定密碼
+    <div className="text-center p-6">
+      <h1 className="text-3xl font-bold mb-4">請輸入密碼</h1>
+      <p className="text-xl mb-8 text-gray-600">工號：{employeeId}</p>
+      
+      <div className="mb-8">
+        <input
+          type="text"
+          value={pin}
+          readOnly
+          className="text-4xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
+          placeholder="ECHO"
+        />
+      </div>
+  
+      <div className="grid grid-cols-4 gap-4 max-w-xs mx-auto">
+        {ALLOWED_LETTERS.map(letter => (
+          <button
+            key={letter}
+            onClick={() => setPin(prev => prev.length < 4 ? prev + letter : prev)}
+            className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
+          >
+            {letter}
+          </button>
+        ))}
+        
+        <button
+          onClick={() => setPin(prev => prev.slice(0, -1))}
+          className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow col-span-2"
+        >
+          退格
+        </button>
+  
+        <button
+          onClick={() => {
+            if (pin === DEFAULT_PIN) {
+              localStorage.setItem('employeeId', employeeId);
+              setStep('confirm');
+            } else {
+              alert('密碼錯誤');
+              setPin('');
+            }
+          }}
+          className={`p-6 text-xl font-bold rounded-xl shadow col-span-2 ${
+            pin.length === 4 
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-300 text-gray-500'
+          }`}
+        >
+          確認
+        </button>
+      </div>
+    </div>
+  );
   // 已提交過的畫面
   const AlreadySubmittedScreen = () => (
     <div className="p-6 text-center">
@@ -302,9 +395,11 @@ const ConfirmScreen = () => {
       <div className="w-full">
         {step === 'loading' && <LoadingScreen />}
         {step === 'input' && <InputScreen />}
+        {step === 'pin' && <PinInputScreen />}  {/* 新增這行 */}
         {step === 'confirm' && <ConfirmScreen />}
         {step === 'success' && <SuccessScreen />}
         {step === 'alreadySubmitted' && <AlreadySubmittedScreen />}
+        {!isOrderTime && step !== 'loading' && <OutOfOrderTimeScreen />}  {/* 新增這行 */}
       </div>
     </div>
   );
