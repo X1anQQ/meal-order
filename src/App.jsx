@@ -54,13 +54,11 @@ function App() {
     const key = `orderChoice_${id}_${today}`;
     const savedChoice = localStorage.getItem(key);
     
-    // 移除阻止相同工號進入的邏輯
-    // 直接進入訂餐選擇畫面
-    setStep('confirm');
-    
-    // 如果今天已經有選擇，可以顯示提示（選擇性）
     if (savedChoice) {
-      setTodayChoice(savedChoice);//存選擇
+      setTodayChoice(savedChoice);
+      setStep('alreadySubmitted');
+    } else {
+      setStep('confirm');//繼續
     }
   };
 
