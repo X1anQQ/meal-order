@@ -17,18 +17,21 @@ function App() {
   useEffect(() => {
     checkOrderTime(); // 新增這行
     const hasVerified = localStorage.getItem('hasVerified'); // 只檢查是否驗證過
-    const savedId = localStorage.getItem('employeeId');
+    
    
     if (!hasVerified) {
-      // 如果從未驗證過，進入 PIN 畫面
+      // 如果從未驗證過，先進入 PIN 驗證
       setStep('pin');
-    } else if (savedId) {
-      // 已驗證過且有儲存工號，檢查今日訂餐狀態
-      setEmployeeId(savedId);//儲存登入
-      checkTodaySubmission(savedId);
     } else {
-      // 已驗證過但沒有工號，進入輸入工號畫面
-      setStep('input');
+      // 已經驗證過 PIN，檢查是否有儲存的工號
+      const savedId = localStorage.getItem('employeeId');
+      if (savedId) {
+        setEmployeeId(savedId);
+        checkTodaySubmission(savedId);
+      } else {
+        // 已驗證但沒有工號，進入工號輸入
+        setStep('input');
+      }
     }
 
     // 新增定時檢查
@@ -162,7 +165,8 @@ const InputScreen = () => (
         <button
           onClick={() => {
             if (employeeId.length >= 2) {
-              setStep('pin');
+              localStorage.setItem('employeeId', employeeId);
+              checkTodaySubmission(employeeId);
             }
           }}
           className={`p-6 text-xl font-bold rounded-xl shadow ${
@@ -259,8 +263,7 @@ const ConfirmScreen = () => {
 
         <button
           onClick={() => {
-            localStorage.removeItem('employeeId');
-
+            localStorage.removeItem('employeeId'); // 只移除工號
             setEmployeeId('');
             setShowLetterPad(true);
             setStep('input');
@@ -318,11 +321,9 @@ const ConfirmScreen = () => {
     </div>
   );
 
-  const PinInputScreen = () => (//設定密碼
+  const PinInputScreen = () => (
     <div className="text-center p-6">
-      <h1 className="text-3xl font-bold mb-4">請輸入密碼</h1>
-      <p className="text-xl mb-8 text-gray-600">工號：{employeeId}</p>
-      
+      <h1 className="text-3xl font-bold mb-4">請輸入密碼:</h1> 
       <div className="mb-8">
         <input
           type="text"
@@ -354,12 +355,12 @@ const ConfirmScreen = () => {
         <button
           onClick={() => {
             if (pin === DEFAULT_PIN) {
-              localStorage.setItem('hasVerified', 'true'); // 記錄裝置已驗證
-              localStorage.setItem('employeeId', employeeId);
-              setStep('confirm');
+              localStorage.setItem('hasVerified', 'true'); // 只記錄 PIN 驗證
+              setStep('input'); // PIN 正確後進入工號輸入
+              setPin(''); // 清空 PIN
             } else {
-                alert('密碼錯誤');
-                setPin('');
+              alert('密碼錯誤');
+              setPin('');
             }
           }}
           className={`p-6 text-xl font-bold rounded-xl shadow col-span-2 ${
@@ -386,8 +387,7 @@ const ConfirmScreen = () => {
 
       <button
         onClick={() => {
-          localStorage.removeItem('employeeId');
-          
+          localStorage.removeItem('employeeId'); // 只移除工號
           setEmployeeId('');
           setShowLetterPad(true);
           setStep('input');
