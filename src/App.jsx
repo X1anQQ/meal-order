@@ -384,25 +384,28 @@ const ConfirmScreen = () => {
           您今天已經選擇：{todayChoice === 'yes' ? '要訂餐' : '不訂餐'}
         </p>
       </div>
+      {!isOrderTime && (
+        <>
+          <button
+            onClick={() => {
+              localStorage.removeItem('employeeId'); // 只移除工號
+              setEmployeeId('');
+              setShowLetterPad(true);
+              setStep('input');
+            }}
+            className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs  mb-4"
+          >
+            使用其他工號
+          </button>
 
-      <button
-        onClick={() => {
-          localStorage.removeItem('employeeId'); // 只移除工號
-          setEmployeeId('');
-          setShowLetterPad(true);
-          setStep('input');
-        }}
-        className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs mb-4"
-      >
-        使用其他工號
-      </button>
-
-      <button
-        onClick={() => setStep('confirm')}
-        className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs"
-      >
-        重新選擇
-      </button>
+          <button
+            onClick={() => setStep('confirm')}
+            className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs"
+          >
+            重新選擇
+          </button>
+        </>
+      )}
     </div>
   );
 
