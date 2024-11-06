@@ -45,7 +45,7 @@ function App() {
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const currentTime = hours + minutes / 60;
-    setIsOrderTime(currentTime >= 5 && currentTime <= 19);
+    setIsOrderTime(currentTime >= 0 && currentTime <= 24);
   };
 
   // 檢查今天是否已經提交
