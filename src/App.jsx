@@ -305,7 +305,7 @@ const ConfirmScreen = () => {
           value={pin}
           readOnly
           className="text-4xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
-          placeholder="ECHO"
+          placeholder=""
         />
       </div>
   
