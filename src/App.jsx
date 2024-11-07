@@ -434,7 +434,7 @@ const ConfirmScreen = () => {
           onClick={() => setPin(prev => prev.slice(0, -1))}
           className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow col-span-2 text-center whitespace-pre-wrap"
         >
-          退格
+          退格<br/>
           Back
         </button>
 
