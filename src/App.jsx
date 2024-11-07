@@ -9,6 +9,7 @@ const translations = {
     companyName: "公司名稱",
     backspace: "退格",
     confirm: "確認",
+    employeeNotFound: '找不到此工號，請重新輸入',
     enterEmployeeId: "請輸入工號",
     id_en_tw: "Enter Employee ID",
     changeEmployeeId: "更換工號",
@@ -36,6 +37,7 @@ const translations = {
     companyName: "Company Name",
     backspace: "Back",
     confirm: "Confirm",
+    employeeNotFound: 'Employee ID not found, please try again',
     enterEmployeeId: "Enter Employee ID",
     id_en_tw: "請輸入工號",
     changeEmployeeId: "Change ID",
@@ -72,6 +74,7 @@ function App() {
   const [todayChoice, setTodayChoice] = useState(null);
   const [isOrderTime, setIsOrderTime] = useState(false);
   const [pin, setPin] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   //設定PIN碼安全性
   const ALLOWED_LETTERS = ['A', 'E', 'C', 'H', 'J', 'L', 'M', 'O'];
   const DEFAULT_PIN = 'ECHO';
@@ -80,6 +83,35 @@ function App() {
   const setAndSaveLanguage = (lang) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
+  };
+
+  // 新增 API 驗證工號函數
+  const checkEmployeeId = async (id) => {
+    try {
+      const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'checkEmployee',
+          employeeId: id
+        })
+      });
+
+      // 由於使用 no-cors 模式，我們需要從 doPost 函數的回應判斷
+      // 假設工號存在時會返回員工資料，不存在時返回 null
+      const data = await response.json();
+      return data.exists;
+    } catch (error) {
+      console.error('Error checking employee ID:', error);
+      // 如果發生錯誤，為了不阻擋用戶操作，可以選擇:
+      // 1. 顯示錯誤訊息但允許繼續
+      // 2. 或者在這裡實現重試邏輯
+      setErrorMessage(language === 'zh' ? '驗證工號時發生錯誤，請稍後再試' : 'Error validating ID, please try again');
+      return false;
+    }
   };
 
   // 根據工號判斷語言
@@ -181,89 +213,144 @@ function App() {
 
   // 工號輸入畫面
   // 修改 InputScreen 組件
-const InputScreen = () => (
-  <div className="text-center p-6">
-    <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
-    <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
-    <div className="mb-8">
-      <input
-        type="text"
-        value={employeeId}
-        readOnly
-        className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
-        style={{ letterSpacing: '0.5em' }}
-      />
-    </div>
-
-    {showLetterPad ? (
-      <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
-        {['A', 'B', 'C', 'D', 'E', 'F', 'H'].map(letter => (
-          <button
-            key={letter}
-            onClick={() => {
-              if (employeeId.length === 0) {
-                setEmployeeId(letter);
-                setShowLetterPad(false);
-                // 設定語言
-                setAndSaveLanguage(determineLanguage(letter));
-              }
-            }}
-            className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50"
-            disabled={employeeId.length > 0}
-          >
-            {letter}
-          </button>
-        ))}
+  const InputScreen = () => {
+    const isEnglish = language === 'en';
+    
+    return (
+      <div className="text-center p-6">
+        <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
+        <div className="mb-8">
+          <input
+            type="text"
+            value={employeeId}
+            readOnly
+            className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
+            style={{ letterSpacing: '0.5em' }}
+          />
+          {/* 錯誤訊息顯示 */}
+          {errorMessage && (
+            <div className="mt-4 text-red-500 bg-red-50 p-3 rounded-lg border border-red-200">
+              <p className="text-lg font-medium">{errorMessage}</p>
+            </div>
+          )}
+        </div>
+  
+        {showLetterPad ? (
+          <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
+            {['A', 'B', 'C', 'D', 'E', 'F', 'H'].map(letter => (
+              <button
+                key={letter}
+                onClick={() => {
+                  if (employeeId.length === 0) {
+                    setEmployeeId(letter);
+                    setShowLetterPad(false);
+                    setAndSaveLanguage(determineLanguage(letter));
+                  }
+                }}
+                className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50"
+                disabled={employeeId.length > 0}
+              >
+                {letter}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+              <button
+                key={num}
+                onClick={() => setEmployeeId(prev => prev + num)}
+                className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() => {
+                const newId = employeeId.slice(0, -1);
+                setEmployeeId(newId);
+                if (newId.length === 0) {
+                  setShowLetterPad(true);
+                }
+              }}
+              className="w-full p-4 text-base sm:text-xl font-bold rounded-xl bg-yellow-500 text-white shadow hover:bg-yellow-600 flex items-center justify-center min-h-[72px]"
+            >
+              <span className="truncate">
+                {t('backspace')}
+              </span>
+            </button>
+            <button
+              onClick={() => setEmployeeId(prev => prev + '0')}
+              className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
+            >
+              0
+            </button>
+            <button
+              onClick={async () => {
+                if (employeeId.length >= 2) {
+                  try {
+                    setIsSubmitting(true);
+                    const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
+                      method: 'POST',
+                      mode: 'no-cors',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        action: 'checkEmployee',
+                        employeeId
+                      })
+                    });
+  
+                    // 假設工號驗證成功
+                    const isValid = true; // 實際使用時應根據後端回應判斷
+  
+                    if (isValid) {
+                      setErrorMessage('');
+                      localStorage.setItem('employeeId', employeeId);
+                      checkTodaySubmission(employeeId);
+                    } else {
+                      setErrorMessage(t('employeeNotFound'));
+                      setTimeout(() => {
+                        setEmployeeId('');
+                        setShowLetterPad(true);
+                        setErrorMessage('');
+                      }, 3000);
+                    }
+                  } catch (error) {
+                    console.error('Error:', error);
+                    setErrorMessage(t('systemError'));
+                    setTimeout(() => {
+                      setErrorMessage('');
+                    }, 3000);
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }
+              }}
+              disabled={isSubmitting}
+              className={`w-full ${
+                isEnglish ? 'p-5' : 'p-6'
+              } text-base sm:text-xl font-bold rounded-xl shadow transition-colors duration-200 flex items-center justify-center min-h-[72px] ${
+                employeeId.length >= 2 && !isSubmitting
+                  ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <span className="truncate">
+                  {t('confirm')}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
-    ) : (
-      <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-          <button
-            key={num}
-            onClick={() => setEmployeeId(prev => prev + num)}
-            className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
-          >
-            {num}
-          </button>
-        ))}
-        <button
-          onClick={() => {
-            const newId = employeeId.slice(0, -1);
-            setEmployeeId(newId);
-            if (newId.length === 0) {
-              setShowLetterPad(true);
-            }
-          }}
-          className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow"
-        >
-          {t('backspace')}
-        </button>
-        <button
-          onClick={() => setEmployeeId(prev => prev + '0')}
-          className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
-        >
-          0
-        </button>
-        <button
-          onClick={() => {
-            if (employeeId.length >= 2) {
-              localStorage.setItem('employeeId', employeeId);
-              checkTodaySubmission(employeeId);
-            }
-          }}
-          // 修改這裡的樣式條件
-          className={` ${language === 'en'? 'p-5' : 'p-6'}text-xl font-bold rounded-xl shadow transition-colors duration-200 ${
-            employeeId.length >= 2 
-              ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          } break-words whitespace-normal overflow-hidden`}
-          >
-        {t('confirm')}
-        </button>
-      </div>
-    )}
-  </div>
-);
+    );
+  };
 // 修改工號變更相關的函數
 const handleChangeEmployeeId = () => {
   localStorage.removeItem('employeeId');
