@@ -258,7 +258,7 @@ const InputScreen = () => (
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
-          {t('confirm')}
+        {t('confirm')}
         </button>
       </div>
     )}
