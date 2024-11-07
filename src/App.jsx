@@ -170,6 +170,7 @@ function App() {
   // 修改 InputScreen 組件
 const InputScreen = () => (
   <div className="text-center p-6">
+    <h1 className="text-3xl font-bold mb-8">Enter Employee ID</h1>
     <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
     <div className="mb-8">
       <input
@@ -385,14 +386,14 @@ const ConfirmScreen = () => {
 
   const PinInputScreen = () => (
     <div className="text-center p-6">
-      <h1 className="text-3xl font-bold mb-4">{t('enterPin')}</h1> 
+      <h1 className="text-3xl font-bold mb-4">Enter PIN/請輸入密碼</h1> 
       <div className="mb-8">
         <input
           type="text"
           value={pin}
           readOnly
           className="text-4xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
-          placeholder={t('companyName')}
+          placeholder="公司名稱/Company Name"
         />
       </div>
 
@@ -411,7 +412,7 @@ const ConfirmScreen = () => {
           onClick={() => setPin(prev => prev.slice(0, -1))}
           className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow col-span-2"
         >
-          {t('backspace')}
+          退格/Back
         </button>
 
         <button
@@ -431,7 +432,7 @@ const ConfirmScreen = () => {
               : 'bg-gray-300 text-gray-500'
           }`}
         >
-          {t('confirm')}
+          確認/Confirm
         </button>
       </div>
     </div>
