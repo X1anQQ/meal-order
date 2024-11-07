@@ -487,7 +487,7 @@ const ConfirmScreen = () => {
         onClick={() => setStep('confirm')}
         className="bg-blue-500 text-white p-4 rounded-xl text-xl font-bold w-full max-w-xs"
       >
-        {t('back')}
+        {t('selectAgain')}
       </button>
     </div>
   );
