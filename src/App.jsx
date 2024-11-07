@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, Loader2 } from 'lucide-react';
 import { debounce } from 'lodash';
 
@@ -133,11 +133,34 @@ function App() {
     }
   };
 
-  // 使用防抖優化驗證
-  const debouncedValidate = useCallback(
-    debounce((id) => validateEmployeeId(id), 300),
-    []
-  );
+  // 修改後的防抖驗證函數實現
+const debouncedValidate = debounce(async (id) => {
+  try {
+    setIsSubmitting(true);
+    const result = await callApi({
+      action: 'checkEmployee',
+      employeeId: id
+    });
+
+    if (result.success) {
+      setErrorMessage('');
+      localStorage.setItem('employeeId', id);
+      checkTodaySubmission(id);
+    } else {
+      setErrorMessage(t('employeeNotFound'));
+      setTimeout(() => {
+        setEmployeeId('');
+        setShowLetterPad(true);
+        setErrorMessage('');
+      }, 2000);
+    }
+  } catch (error) {
+    setErrorMessage(t('systemError'));
+    setTimeout(() => setErrorMessage(''), 3000);
+  } finally {
+    setIsSubmitting(false);
+  }
+}, 300);
 
   
   // 根據工號判斷語言
