@@ -251,10 +251,11 @@ const InputScreen = () => (
               checkTodaySubmission(employeeId);
             }
           }}
-          className={`p-6 text-xl font-bold rounded-xl shadow ${
+          // 修改這裡的樣式條件
+          className={`p-6 text-xl font-bold rounded-xl shadow transition-colors duration-200 ${
             employeeId.length >= 2 
-              ? 'bg-blue-500 text-white hover:bg-blue-600'
-              : 'bg-gray-300 text-gray-500'
+              ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >
           {t('confirm')}
