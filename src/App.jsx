@@ -414,7 +414,7 @@ const ConfirmScreen = () => {
           type="text"
           value={pin}
           readOnly
-          className="text-2xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
+          className="text-xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
           placeholder="公司名稱/Company Name"
         />
       </div>
@@ -432,9 +432,10 @@ const ConfirmScreen = () => {
         
         <button
           onClick={() => setPin(prev => prev.slice(0, -1))}
-          className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow col-span-2"
+          className="p-6 text-xl font-bold rounded-xl bg-yellow-500 text-white shadow col-span-2 text-center whitespace-pre-wrap"
         >
-          退格/Back
+          退格
+          Back
         </button>
 
         <button
