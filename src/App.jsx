@@ -10,6 +10,7 @@ const translations = {
     backspace: "退格",
     confirm: "確認",
     enterEmployeeId: "請輸入工號",
+    id_en_tw: "Enter Employee ID",
     changeEmployeeId: "更換工號",
     todayOrder: "今日訂餐",
     employeeId: "工號",
@@ -36,6 +37,7 @@ const translations = {
     backspace: "Back",
     confirm: "Confirm",
     enterEmployeeId: "Enter Employee ID",
+    id_en_tw: "請輸入工號",
     changeEmployeeId: "Change ID",
     todayOrder: "Today's Order",
     employeeId: "Employee ID",
@@ -181,7 +183,7 @@ function App() {
   // 修改 InputScreen 組件
 const InputScreen = () => (
   <div className="text-center p-6">
-    <h1 className="text-3xl font-bold mb-8">Enter Employee ID</h1>
+    <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
     <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
     <div className="mb-8">
       <input
