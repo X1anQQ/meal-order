@@ -414,7 +414,7 @@ const ConfirmScreen = () => {
           type="text"
           value={pin}
           readOnly
-          className="text-4xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
+          className="text-2xl font-bold text-center w-full p-4 bg-gray-100 rounded-xl tracking-widest"
           placeholder="公司名稱/Company Name"
         />
       </div>
@@ -448,13 +448,14 @@ const ConfirmScreen = () => {
               setPin('');
             }
           }}
-          className={`p-6 text-xl font-bold rounded-xl shadow col-span-2 ${
+          className={`p-6 text-xl font-bold rounded-xl shadow col-span-2 text-center whitespace-pre-wrap ${
             pin.length === 4 
               ? 'bg-blue-500 text-white hover:bg-blue-600'
               : 'bg-gray-300 text-gray-500'
           }`}
-        >
-          確認/Confirm
+          >
+            確認
+            Confirm
         </button>
       </div>
     </div>
