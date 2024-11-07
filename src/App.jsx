@@ -252,7 +252,7 @@ const InputScreen = () => (
             }
           }}
           // 修改這裡的樣式條件
-          className={`p-6 ${savedLanguage === 'en' ? 'text-base' : 'text-xl'} font-bold rounded-xl shadow transition-colors duration-200 ${
+          className={`p-6 ${determineLanguage === 'en' ? 'text-base' : 'text-xl'} font-bold rounded-xl shadow transition-colors duration-200 ${
             employeeId.length >= 2 
               ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
