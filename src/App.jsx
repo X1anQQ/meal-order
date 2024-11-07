@@ -251,18 +251,14 @@ const InputScreen = () => (
               checkTodaySubmission(employeeId);
             }
           }}
-          // 修改確認按鈕樣式，確保文字置中且不溢出
-          className={`w-full p-4 text-base sm:text-xl font-bold rounded-xl shadow transition-colors duration-200 flex items-center justify-center min-h-[72px] ${
+          // 修改這裡的樣式條件
+          className={`p-6 text-xl font-bold rounded-xl shadow transition-colors duration-200 ${
             employeeId.length >= 2 
-              ? isEnglish 
-                ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-              : 'bg-gray-300 text-gray-500'
-          }`}
-        >
-          <span className="truncate">
-            {t('confirm')}
-          </span>
+              ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          } break-words whitespace-normal overflow-hidden`}
+          >
+        {t('confirm')}
         </button>
       </div>
     )}
