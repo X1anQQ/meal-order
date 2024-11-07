@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, Loader2 } from 'lucide-react';
+import { debounce } from 'lodash';
 
+// 新增 API 相關函數
+const callApi = async (data) => {
+  try {
+    const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('API Error:', error);
+    return { success: false, error: error.message };
+  }
+};
 
 // 首先建立語言包
 const translations = {
@@ -85,35 +104,42 @@ function App() {
     localStorage.setItem('language', lang);
   };
 
-  // 新增 API 驗證工號函數
-  const checkEmployeeId = async (id) => {
+  // 優化後的驗證工號函數
+  const validateEmployeeId = async (id) => {
     try {
-      const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'checkEmployee',
-          employeeId: id
-        })
+      setIsSubmitting(true);
+      const result = await callApi({
+        action: 'checkEmployee',
+        employeeId: id
       });
 
-      // 由於使用 no-cors 模式，我們需要從 doPost 函數的回應判斷
-      // 假設工號存在時會返回員工資料，不存在時返回 null
-      const data = await response.json();
-      return data.exists;
+      if (result.success) {
+        setErrorMessage('');
+        localStorage.setItem('employeeId', id);
+        checkTodaySubmission(id);
+      } else {
+        setErrorMessage(t('employeeNotFound'));
+        setTimeout(() => {
+          setEmployeeId('');
+          setShowLetterPad(true);
+          setErrorMessage('');
+        }, 2000);
+      }
     } catch (error) {
-      console.error('Error checking employee ID:', error);
-      // 如果發生錯誤，為了不阻擋用戶操作，可以選擇:
-      // 1. 顯示錯誤訊息但允許繼續
-      // 2. 或者在這裡實現重試邏輯
-      setErrorMessage(language === 'zh' ? '驗證工號時發生錯誤，請稍後再試' : 'Error validating ID, please try again');
-      return false;
+      setErrorMessage(t('systemError'));
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  // 使用防抖優化驗證
+  const debouncedValidate = useCallback(
+    debounce((id) => validateEmployeeId(id), 300),
+    []
+  );
+
+  
   // 根據工號判斷語言
   const determineLanguage = (id) => {
     return id.startsWith('D') ? 'en' : 'zh';
@@ -172,33 +198,29 @@ function App() {
     }
   };
 
-  // 提交訂餐選擇
-  const submitOrder = async (choice) => {
-    setIsSubmitting(true);
+  // 優化後的提交訂單函數
+  const submitOrder = async (choice, isVeg, updateHabit) => {
     try {
-      const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          employeeId,
-          order: choice === 'yes',
-          isVeg: isVeg && choice === 'yes', // 新增這行
-          date: new Date().toLocaleDateString('zh-TW')
-        })
+      setIsSubmitting(true);
+      const result = await callApi({
+        employeeId,
+        order: choice === 'yes',
+        isVeg: isVeg && choice === 'yes',
+        updateHabit,
+        date: new Date().toLocaleDateString('zh-TW')
       });
-      
-      // 儲存今天的選擇
-      const today = new Date().toLocaleDateString('zh-TW');
-      const key = `orderChoice_${employeeId}_${today}`;
-      localStorage.setItem(key, choice);
-      setTodayChoice(choice);
-      
-      setStep('success');
+
+      if (result.success) {
+        const today = new Date().toLocaleDateString('zh-TW');
+        const key = `orderChoice_${employeeId}_${today}`;
+        localStorage.setItem(key, choice);
+        setTodayChoice(choice);
+        setStep('success');
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
-      alert('提交失敗，請稍後再試');
+      alert(language === 'zh' ? '提交失敗，請稍後再試' : 'Submission failed, please try again');
     } finally {
       setIsSubmitting(false);
     }
@@ -212,6 +234,7 @@ function App() {
   );
 
   // 工號輸入畫面
+  // 修改 InputScreen 組件
   // 修改 InputScreen 組件
   const InputScreen = () => {
     const isEnglish = language === 'en';
@@ -228,14 +251,13 @@ function App() {
             className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
             style={{ letterSpacing: '0.5em' }}
           />
-          {/* 錯誤訊息顯示 */}
           {errorMessage && (
             <div className="mt-4 text-red-500 bg-red-50 p-3 rounded-lg border border-red-200">
               <p className="text-lg font-medium">{errorMessage}</p>
             </div>
           )}
         </div>
-  
+
         {showLetterPad ? (
           <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
             {['A', 'B', 'C', 'D', 'E', 'F', 'H'].map(letter => (
@@ -276,9 +298,7 @@ function App() {
               }}
               className="w-full p-4 text-base sm:text-xl font-bold rounded-xl bg-yellow-500 text-white shadow hover:bg-yellow-600 flex items-center justify-center min-h-[72px]"
             >
-              <span className="truncate">
-                {t('backspace')}
-              </span>
+              <span className="truncate">{t('backspace')}</span>
             </button>
             <button
               onClick={() => setEmployeeId(prev => prev + '0')}
@@ -287,49 +307,12 @@ function App() {
               0
             </button>
             <button
-              onClick={async () => {
+              onClick={() => {
                 if (employeeId.length >= 2) {
-                  try {
-                    setIsSubmitting(true);
-                    const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
-                      method: 'POST',
-                      mode: 'no-cors',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        action: 'checkEmployee',
-                        employeeId
-                      })
-                    });
-  
-                    // 假設工號驗證成功
-                    const isValid = true; // 實際使用時應根據後端回應判斷
-  
-                    if (isValid) {
-                      setErrorMessage('');
-                      localStorage.setItem('employeeId', employeeId);
-                      checkTodaySubmission(employeeId);
-                    } else {
-                      setErrorMessage(t('employeeNotFound'));
-                      setTimeout(() => {
-                        setEmployeeId('');
-                        setShowLetterPad(true);
-                        setErrorMessage('');
-                      }, 3000);
-                    }
-                  } catch (error) {
-                    console.error('Error:', error);
-                    setErrorMessage(t('systemError'));
-                    setTimeout(() => {
-                      setErrorMessage('');
-                    }, 3000);
-                  } finally {
-                    setIsSubmitting(false);
-                  }
+                  debouncedValidate(employeeId);
                 }
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || employeeId.length < 2}
               className={`w-full ${
                 isEnglish ? 'p-5' : 'p-6'
               } text-base sm:text-xl font-bold rounded-xl shadow transition-colors duration-200 flex items-center justify-center min-h-[72px] ${
@@ -341,9 +324,7 @@ function App() {
               {isSubmitting ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
-                <span className="truncate">
-                  {t('confirm')}
-                </span>
+                <span className="truncate">{t('confirm')}</span>
               )}
             </button>
           </div>
@@ -351,59 +332,19 @@ function App() {
       </div>
     );
   };
-// 修改工號變更相關的函數
-const handleChangeEmployeeId = () => {
-  localStorage.removeItem('employeeId');
-  setEmployeeId('');
-  setShowLetterPad(true);
-  // 重設語言為中文
-  setAndSaveLanguage('zh');
-  setStep('input');
-};
+
   // 訂餐選擇畫面
-const ConfirmScreen = () => {
-  // 在最上方加入時間檢查
-  if (!isOrderTime) {
-    return <OutOfOrderTimeScreen />;
-  }
-  const [isVeg, setIsVeg] = useState(false);
-  const [updateHabit, setUpdateHabit] = useState(false);
-
-  // 修改提交函數
-  const handleSubmit = async (choice) => {
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          employeeId,
-          order: choice === 'yes',
-          isVeg: isVeg && choice === 'yes', // 只有在要訂餐時才傳送素食選項
-          updateHabit: updateHabit,  // 添加更新習慣的標記
-          date: new Date().toLocaleDateString('zh-TW')
-        })
-      });
-      
-      // 儲存今天的選擇
-      const today = new Date().toLocaleDateString('zh-TW');
-      const key = `orderChoice_${employeeId}_${today}`;
-      localStorage.setItem(key, choice);
-      setTodayChoice(choice);
-      
-      setStep('success');
-    } catch (error) {
-      alert('提交失敗，請稍後再試');
-    } finally {
-      setIsSubmitting(false);
+  const ConfirmScreen = () => {
+    // 檢查是否在訂餐時間內
+    if (!isOrderTime) {
+      return <OutOfOrderTimeScreen />;
     }
-  };
-
-  return (
-    <div className="text-center p-6">
+  
+    const [isVeg, setIsVeg] = useState(false);
+    const [updateHabit, setUpdateHabit] = useState(false);
+  
+    return (
+      <div className="text-center p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">{t('todayOrder')}</h1>
           <p className="text-xl text-gray-600">{t('employeeId')}: {employeeId}</p>
@@ -411,6 +352,7 @@ const ConfirmScreen = () => {
             {new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')}
           </p>
           
+          {/* 素食選項 */}
           <div className="mb-6 p-4 bg-white rounded-xl shadow-sm">
             <button
               onClick={() => setIsVeg(!isVeg)}
@@ -424,7 +366,8 @@ const ConfirmScreen = () => {
               <span className="text-xl font-bold">{t('vegMeal')}</span>
             </button>
           </div>
-
+  
+          {/* 設定預設選項 */}
           <div className="mb-6 p-4 bg-white rounded-xl shadow-sm">
             <button
               onClick={() => setUpdateHabit(!updateHabit)}
@@ -438,7 +381,8 @@ const ConfirmScreen = () => {
               <span className="text-xl font-bold">{t('setAsDefault')}</span>
             </button>
           </div>
-
+  
+          {/* 更換工號按鈕 */}
           <button
             onClick={() => {
               localStorage.removeItem('employeeId');
@@ -451,10 +395,12 @@ const ConfirmScreen = () => {
             {t('changeEmployeeId')}
           </button>
         </div>
-
+  
+        {/* 訂餐選擇按鈕 */}
         <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto">
+          {/* 要訂餐按鈕 */}
           <button
-            onClick={() => handleSubmit('yes')}
+            onClick={() => submitOrder('yes', isVeg, updateHabit)}
             disabled={isSubmitting}
             className="p-12 bg-green-500 text-white rounded-2xl flex flex-col items-center hover:bg-green-600 disabled:opacity-50"
           >
@@ -465,9 +411,10 @@ const ConfirmScreen = () => {
             )}
             <span className="text-3xl font-bold">{t('wantOrder')}</span>
           </button>
-
+  
+          {/* 不訂餐按鈕 */}
           <button
-            onClick={() => handleSubmit('no')}
+            onClick={() => submitOrder('no', false, updateHabit)}
             disabled={isSubmitting}
             className="p-12 bg-red-500 text-white rounded-2xl flex flex-col items-center hover:bg-red-600 disabled:opacity-50"
           >
@@ -480,8 +427,8 @@ const ConfirmScreen = () => {
           </button>
         </div>
       </div>
-  );
-};
+    );
+  };
   const OutOfOrderTimeScreen = () => (//非訂餐時間段
     <div className="text-center p-6">
       <div className="bg-yellow-100 p-8 rounded-2xl mb-8">
