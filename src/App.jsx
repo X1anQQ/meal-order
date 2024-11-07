@@ -60,7 +60,10 @@ const translations = {
 
 function App() {
   const [step, setStep] = useState('loading');
-  const [language, setLanguage] = useState('zh');
+  const [language, setLanguage] = useState(() => {
+    const savedLanguage = localStorage.getItem('language');
+    return savedLanguage || 'zh';
+  });
   const [employeeId, setEmployeeId] = useState('');
   const [showLetterPad, setShowLetterPad] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +73,12 @@ function App() {
   //設定PIN碼安全性
   const ALLOWED_LETTERS = ['A', 'E', 'C', 'H', 'J', 'L', 'M', 'O'];
   const DEFAULT_PIN = 'ECHO';
+
+  // 修改語言設定函數
+  const setAndSaveLanguage = (lang) => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
+  };
 
   // 根據工號判斷語言
   const determineLanguage = (id) => {
@@ -92,6 +101,8 @@ function App() {
       const savedId = localStorage.getItem('employeeId');
       if (savedId) {
         setEmployeeId(savedId);
+        // 根據已儲存的工號設定語言
+        setAndSaveLanguage(determineLanguage(savedId));
         checkTodaySubmission(savedId);
       } else {
         // 已驗證但沒有工號，進入工號輸入
@@ -192,7 +203,7 @@ const InputScreen = () => (
                 setEmployeeId(letter);
                 setShowLetterPad(false);
                 // 設定語言
-                setLanguage(determineLanguage(letter));
+                setAndSaveLanguage(determineLanguage(letter));
               }
             }}
             className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50"
@@ -250,7 +261,15 @@ const InputScreen = () => (
     )}
   </div>
 );
-
+// 修改工號變更相關的函數
+const handleChangeEmployeeId = () => {
+  localStorage.removeItem('employeeId');
+  setEmployeeId('');
+  setShowLetterPad(true);
+  // 重設語言為中文
+  setAndSaveLanguage('zh');
+  setStep('input');
+};
   // 訂餐選擇畫面
 const ConfirmScreen = () => {
   // 在最上方加入時間檢查
