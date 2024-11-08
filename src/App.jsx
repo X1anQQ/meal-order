@@ -202,37 +202,31 @@ function App() {
   const submitOrder = async (choice, isVeg, updateHabit) => {
     if (isSubmitting) return; // 防止重複提交
     
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      
-      // 先在本地記錄選擇，提供即時反饋
-      const today = new Date().toLocaleDateString('zh-TW');
-      const key = `orderChoice_${employeeId}_${today}`;
-      localStorage.setItem(key, choice);
-      setTodayChoice(choice);
-      
-      // 顯示成功畫面（優先反饋）
-      setStep('success');
-      
-      // 後台同步資料
+      // 先提交到後端
       const result = await callApi({
         employeeId,
         order: choice === 'yes',
         isVeg: isVeg && choice === 'yes',
         updateHabit,
-        date: today
+        date: new Date().toLocaleDateString('zh-TW')
       });
   
-      if (!result.success) {
-        // 如果提交失敗，恢復本地存儲並提示用戶
-        localStorage.removeItem(key);
+      if (result.success) {
+        // 後端成功後才更新本地狀態
+        const today = new Date().toLocaleDateString('zh-TW');
+        const key = `orderChoice_${employeeId}_${today}`;
+        localStorage.setItem(key, choice);
+        setTodayChoice(choice);
+        setStep('success');
+      } else {
+        // 如果後端失敗，直接提示錯誤
         alert(language === 'zh' ? '提交失敗，請重新嘗試' : 'Submission failed, please try again');
-        setStep('confirm');
       }
     } catch (error) {
       console.error('Order submission error:', error);
       alert(language === 'zh' ? '提交失敗，請稍後再試' : 'Submission failed, please try again');
-      setStep('confirm');
     } finally {
       setIsSubmitting(false);
     }
@@ -480,7 +474,11 @@ function App() {
         <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto">
           {/* 要訂餐按鈕 */}
           <button
-            onClick={() => !isSubmitting && submitOrder('yes', isVeg, updateHabit)}
+            onClick={() => {
+              if (!isSubmitting) {
+                submitOrder('yes', isVeg, updateHabit);
+              }
+            }}
             disabled={isSubmitting}
             className="p-12 bg-green-500 text-white rounded-2xl flex flex-col items-center hover:bg-green-600 disabled:opacity-50"
           >
@@ -494,7 +492,11 @@ function App() {
   
           {/* 不訂餐按鈕 */}
           <button
-            onClick={() => !isSubmitting && submitOrder('no', false, updateHabit)}
+            onClick={() => {
+              if (!isSubmitting) {
+                submitOrder('no', false, updateHabit);
+              }
+            }}
             disabled={isSubmitting}
             className="p-12 bg-red-500 text-white rounded-2xl flex flex-col items-center hover:bg-red-600 disabled:opacity-50"
           >
