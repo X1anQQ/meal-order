@@ -75,7 +75,7 @@ const translations = {
     todayOrder: "Today's Order",
     employeeId: "Employee ID",
     vegMeal: "Vegetarian Meal",
-    setAsDefault: "Set as Default Choice",
+    setAsDefault: "Set this choice as my default",
     wantOrder: "Order",
     noOrder: "No Order",
     outOfOrderTime: "Outside Order Hours",
