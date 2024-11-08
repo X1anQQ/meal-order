@@ -4,6 +4,8 @@ import { Check, X, Loader2 } from 'lucide-react';
 // 新增 API 相關函數
 const callApi = async (data) => {
   try {
+    console.log('Sending request:', data); // 添加日誌
+
     const response = await fetch(import.meta.env.VITE_GOOGLE_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -13,12 +15,19 @@ const callApi = async (data) => {
       body: JSON.stringify(data)
     });
 
+    // 因為 no-cors 模式下無法讀取響應內容，我們根據 response.ok 判斷
+    if (!response.ok && response.status !== 0) { // status 為 0 是 no-cors 的正常情況
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // 在 no-cors 模式下，我們只能假設請求成功
     return { success: true };
   } catch (error) {
     console.error('API Error:', error);
     return { success: false, error: error.message };
   }
 };
+
 
 // 首先建立語言包
 const translations = {
@@ -200,28 +209,31 @@ function App() {
 
   // 優化後的提交訂單函數
   const submitOrder = async (choice, isVeg, updateHabit) => {
-    if (isSubmitting) return; // 防止重複提交
-    
     setIsSubmitting(true);
+    console.log('Starting order submission...'); // 添加日誌
+  
     try {
-      // 先提交到後端
-      const result = await callApi({
+      const requestData = {
         employeeId,
         order: choice === 'yes',
         isVeg: isVeg && choice === 'yes',
         updateHabit,
         date: new Date().toLocaleDateString('zh-TW')
-      });
+      };
+      
+      console.log('Submitting order with data:', requestData); // 添加日誌
+      
+      const result = await callApi(requestData);
+      console.log('Submission result:', result); // 添加日誌
   
       if (result.success) {
-        // 後端成功後才更新本地狀態
         const today = new Date().toLocaleDateString('zh-TW');
         const key = `orderChoice_${employeeId}_${today}`;
         localStorage.setItem(key, choice);
         setTodayChoice(choice);
         setStep('success');
       } else {
-        // 如果後端失敗，直接提示錯誤
+        console.error('Submission failed:', result.error);
         alert(language === 'zh' ? '提交失敗，請重新嘗試' : 'Submission failed, please try again');
       }
     } catch (error) {
