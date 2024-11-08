@@ -191,7 +191,7 @@ function App() {
     const minutes = now.getMinutes();
     const currentTime = hours + minutes / 60;
     const day = now.getDay();//0是周日6周六 判斷是不是假日
-    setIsOrderTime(currentTime >= 0 && currentTime <= 24 && day > 0 && day < 4);
+    setIsOrderTime(currentTime >= 0 && currentTime <= 24 && day > 0 && day < 6);
   };
 
   // 檢查今天是否已經提交
