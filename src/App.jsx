@@ -95,6 +95,10 @@ function App() {
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   //設定PIN碼安全性
+  // 在 App.js 添加驗證相關常數和函數
+  const VALID_DEPARTMENTS = ['A', 'B', 'C', 'D', 'E', 'F', 'H']; // 有效的部門代號
+  const ID_MIN_LENGTH = 2; // 最短工號長度 (1字母 + 1數字)
+  const ID_MAX_LENGTH = 3; // 最長工號長度 (1字母 + 2數字)
   const ALLOWED_LETTERS = ['A', 'E', 'C', 'H', 'J', 'L', 'M', 'O'];
   const DEFAULT_PIN = 'ECHO';
 
@@ -104,63 +108,21 @@ function App() {
     localStorage.setItem('language', lang);
   };
 
-  // 優化後的驗證工號函數
-  const validateEmployeeId = async (id) => {
-    try {
-      setIsSubmitting(true);
-      const result = await callApi({
-        action: 'checkEmployee',
-        employeeId: id
-      });
-
-      if (result.success) {
-        setErrorMessage('');
-        localStorage.setItem('employeeId', id);
-        checkTodaySubmission(id);
-      } else {
-        setErrorMessage(t('employeeNotFound'));
-        setTimeout(() => {
-          setEmployeeId('');
-          setShowLetterPad(true);
-          setErrorMessage('');
-        }, 2000);
-      }
-    } catch (error) {
-      setErrorMessage(t('systemError'));
-      setTimeout(() => setErrorMessage(''), 3000);
-    } finally {
-      setIsSubmitting(false);
-    }
+  // 工號格式驗證函數
+  const isValidEmployeeIdFormat = (id) => {
+    if (!id || id.length < ID_MIN_LENGTH || id.length > ID_MAX_LENGTH) return false;
+    
+    const deptCode = id.charAt(0);
+    const numbers = id.slice(1);
+    
+    // 檢查部門代碼是否有效
+    if (!VALID_DEPARTMENTS.includes(deptCode)) return false;
+    
+    // 檢查數字部分是否為 1-2 位數字
+    return /^\d{1,2}$/.test(numbers);
   };
 
-  // 修改後的防抖驗證函數實現
-const debouncedValidate = debounce(async (id) => {
-  try {
-    setIsSubmitting(true);
-    const result = await callApi({
-      action: 'checkEmployee',
-      employeeId: id
-    });
 
-    if (result.success) {
-      setErrorMessage('');
-      localStorage.setItem('employeeId', id);
-      checkTodaySubmission(id);
-    } else {
-      setErrorMessage(t('employeeNotFound'));
-      setTimeout(() => {
-        setEmployeeId('');
-        setShowLetterPad(true);
-        setErrorMessage('');
-      }, 2000);
-    }
-  } catch (error) {
-    setErrorMessage(t('systemError'));
-    setTimeout(() => setErrorMessage(''), 3000);
-  } finally {
-    setIsSubmitting(false);
-  }
-}, 300);
 
   
   // 根據工號判斷語言
@@ -261,100 +223,171 @@ const debouncedValidate = debounce(async (id) => {
   // 修改 InputScreen 組件
   const InputScreen = () => {
     const isEnglish = language === 'en';
-    
-    return (
-      <div className="text-center p-6">
-        <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
-        <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
-        <div className="mb-8">
-          <input
-            type="text"
-            value={employeeId}
-            readOnly
-            className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
-            style={{ letterSpacing: '0.5em' }}
-          />
-          {errorMessage && (
-            <div className="mt-4 text-red-500 bg-red-50 p-3 rounded-lg border border-red-200">
-              <p className="text-lg font-medium">{errorMessage}</p>
-            </div>
-          )}
-        </div>
+    const [localError, setLocalError] = useState('');
 
-        {showLetterPad ? (
-          <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
-            {['A', 'B', 'C', 'D', 'E', 'F', 'H'].map(letter => (
-              <button
-                key={letter}
-                onClick={() => {
-                  if (employeeId.length === 0) {
-                    setEmployeeId(letter);
-                    setShowLetterPad(false);
-                    setAndSaveLanguage(determineLanguage(letter));
-                  }
-                }}
-                className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50"
-                disabled={employeeId.length > 0}
-              >
-                {letter}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-              <button
-                key={num}
-                onClick={() => setEmployeeId(prev => prev + num)}
-                className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                const newId = employeeId.slice(0, -1);
-                setEmployeeId(newId);
-                if (newId.length === 0) {
-                  setShowLetterPad(true);
-                }
-              }}
-              className="w-full p-4 text-base sm:text-xl font-bold rounded-xl bg-yellow-500 text-white shadow hover:bg-yellow-600 flex items-center justify-center min-h-[72px]"
-            >
-              <span className="truncate">{t('backspace')}</span>
-            </button>
-            <button
-              onClick={() => setEmployeeId(prev => prev + '0')}
-              className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50"
-            >
-              0
-            </button>
-            <button
-              onClick={() => {
-                if (employeeId.length >= 2) {
-                  debouncedValidate(employeeId);
-                }
-              }}
-              disabled={isSubmitting || employeeId.length < 2}
-              className={`w-full ${
-                isEnglish ? 'p-5' : 'p-6'
-              } text-base sm:text-xl font-bold rounded-xl shadow transition-colors duration-200 flex items-center justify-center min-h-[72px] ${
-                employeeId.length >= 2 && !isSubmitting
-                  ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <span className="truncate">{t('confirm')}</span>
-              )}
-            </button>
+    // 本地驗證函數
+  const validateLocally = (id) => {
+    // 如果長度還不夠，不顯示錯誤
+    if (id.length < ID_MIN_LENGTH) return false;
+    
+    if (!isValidEmployeeIdFormat(id)) {
+      setLocalError(t('invalidIdFormat'));
+      return false;
+    }
+    return true;
+  };
+
+  // 移除 debounce，改用直接驗證因為工號很短
+  const handleValidation = async (id) => {
+    if (!validateLocally(id)) return;
+    
+    setIsSubmitting(true);
+    try {
+      const result = await callApi({
+        action: 'checkEmployee',
+        employeeId: id
+      });
+
+      if (result.success) {
+        setErrorMessage('');
+        localStorage.setItem('employeeId', id);
+        checkTodaySubmission(id);
+      } else {
+        setLocalError(t('employeeNotFound'));
+        setTimeout(() => {
+          setEmployeeId('');
+          setShowLetterPad(true);
+          setLocalError('');
+        }, 2000);
+      }
+    } catch (error) {
+      setLocalError(t('systemError'));
+      setTimeout(() => setLocalError(''), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+    return (
+    <div className="text-center p-6">
+      <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('enterEmployeeId')}</h1>
+      <div className="mb-8">
+        <input
+          type="text"
+          value={employeeId}
+          readOnly
+          className="w-full text-4xl font-bold text-center p-4 bg-gray-100 rounded-xl"
+          style={{ letterSpacing: '0.5em' }}
+        />
+        {/* 錯誤提示 */}
+        {(localError || errorMessage) && (
+          <div className="mt-4 text-red-500 bg-red-50 p-3 rounded-lg border border-red-200">
+            <p className="text-lg font-medium">{localError || errorMessage}</p>
           </div>
         )}
       </div>
-    );
-  };
+
+      {showLetterPad ? (
+        // 字母鍵盤
+        <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
+          {VALID_DEPARTMENTS.map(letter => (
+            <button
+              key={letter}
+              onClick={() => {
+                if (employeeId.length === 0) {
+                  setEmployeeId(letter);
+                  setShowLetterPad(false);
+                  setAndSaveLanguage(determineLanguage(letter));
+                }
+              }}
+              className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              disabled={employeeId.length > 0}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      ) : (
+        // 數字鍵盤
+        <div className="grid grid-cols-3 gap-4 mx-auto max-w-xs">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+            <button
+              key={num}
+              onClick={() => {
+                // 檢查是否已達到最大長度
+                if (employeeId.length < ID_MAX_LENGTH) {
+                  const newId = employeeId + num;
+                  setEmployeeId(newId);
+                  // 如果達到最小長度，進行驗證
+                  if (newId.length >= ID_MIN_LENGTH) {
+                    handleValidation(newId);
+                  }
+                }
+              }}
+              disabled={employeeId.length >= ID_MAX_LENGTH}
+              className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {num}
+            </button>
+          ))}
+          {/* 退格鍵 */}
+          <button
+            onClick={() => {
+              const newId = employeeId.slice(0, -1);
+              setEmployeeId(newId);
+              if (newId.length === 0) {
+                setShowLetterPad(true);
+                setLocalError('');
+              }
+            }}
+            className="w-full p-4 text-base sm:text-xl font-bold rounded-xl bg-yellow-500 text-white shadow hover:bg-yellow-600 flex items-center justify-center min-h-[72px] transition-colors"
+          >
+            <span className="truncate">{t('backspace')}</span>
+          </button>
+          {/* 0 鍵 */}
+          <button
+            onClick={() => {
+              if (employeeId.length < ID_MAX_LENGTH) {
+                const newId = employeeId + '0';
+                setEmployeeId(newId);
+                if (newId.length >= ID_MIN_LENGTH) {
+                  handleValidation(newId);
+                }
+              }
+            }}
+            disabled={employeeId.length >= ID_MAX_LENGTH}
+            className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            0
+          </button>
+          {/* 確認鍵 */}
+          <button
+            onClick={() => {
+              if (employeeId.length >= ID_MIN_LENGTH) {
+                handleValidation(employeeId);
+              }
+            }}
+            disabled={isSubmitting || employeeId.length < ID_MIN_LENGTH}
+            className={`w-full ${
+              isEnglish ? 'p-5' : 'p-6'
+            } text-base sm:text-xl font-bold rounded-xl shadow transition-all flex items-center justify-center min-h-[72px] ${
+              employeeId.length >= ID_MIN_LENGTH && !isSubmitting
+                ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <span className="truncate">{t('confirm')}</span>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
   // 訂餐選擇畫面
   const ConfirmScreen = () => {
