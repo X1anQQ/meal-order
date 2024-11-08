@@ -318,7 +318,7 @@ function App() {
       {showLetterPad ? (
         // 字母鍵盤
         <div className="grid grid-cols-4 gap-4 mx-auto max-w-xs mb-4">
-          {VALID_DEPARTMENTS.map(letter => (
+          {Object.keys(VALID_DEPARTMENTS).map(letter => (
             <button
               key={letter}
               onClick={() => {
