@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, Loader2 } from 'lucide-react';
-import { debounce } from 'lodash';
 
 // 新增 API 相關函數
 const callApi = async (data) => {
@@ -100,7 +99,15 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('');
   //設定PIN碼安全性
   // 在 App.js 添加驗證相關常數和函數
-  const VALID_DEPARTMENTS = ['A', 'B', 'C', 'D', 'E', 'F', 'H']; // 有效的部門代號
+  const VALID_DEPARTMENTS = {
+    'A': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16],
+    'B': [1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14],
+    'C': [1,2,3,5,6,7,8,9,10,11,13,14,15,16,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,37,38,39,40,42,44,45],
+    'D': [1,2,3,4,5,6,7,8,9,10,11,13,14,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33],
+    'E': [3,7,11,15],
+    'F': [1,3],
+    'H': [1,2,3,4,5,6,7,8,9,10,11,13,14,15,20,23,27]
+  }; // 有效的部門代號
   const ID_MIN_LENGTH = 2; // 最短工號長度 (1字母 + 1數字)
   const ID_MAX_LENGTH = 3; // 最長工號長度 (1字母 + 2數字)
   const ALLOWED_LETTERS = ['A', 'E', 'C', 'H', 'J', 'L', 'M', 'O'];
@@ -114,16 +121,20 @@ function App() {
 
   // 工號格式驗證函數
   const isValidEmployeeIdFormat = (id) => {
-    if (!id || id.length < ID_MIN_LENGTH || id.length > ID_MAX_LENGTH) return false;
+    if (!id || id.length < 2 || id.length > 3) return false;
     
     const deptCode = id.charAt(0);
     const numbers = id.slice(1);
     
     // 檢查部門代碼是否有效
-    if (!VALID_DEPARTMENTS.includes(deptCode)) return false;
+    if (!VALID_DEPARTMENTS[deptCode]) return false;
     
-    // 檢查數字部分是否為 1-2 位數字
-    return /^\d{1,2}$/.test(numbers);
+    // 轉換數字部分為整數
+    const numValue = parseInt(numbers, 10);
+    if (isNaN(numValue)) return false;
+    
+    // 檢查是否在允許的工號列表中
+    return VALID_DEPARTMENTS[deptCode].includes(numValue);
   };
 
 
@@ -335,11 +346,8 @@ function App() {
                 if (employeeId.length < ID_MAX_LENGTH) {
                   const newId = employeeId + num;
                   setEmployeeId(newId);
-                  // 如果達到最小長度，進行驗證
-                  if (newId.length >= ID_MIN_LENGTH) {
-                    handleValidation(newId);
+                  validateLocally(newId); // 只做本地格式驗證
                   }
-                }
               }}
               disabled={employeeId.length >= ID_MAX_LENGTH}
               className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
@@ -380,15 +388,15 @@ function App() {
           {/* 確認鍵 */}
           <button
             onClick={() => {
-              if (employeeId.length >= ID_MIN_LENGTH) {
+              if (employeeId.length >= ID_MIN_LENGTH && validateLocally(employeeId)) {
                 handleValidation(employeeId);
               }
             }}
-            disabled={isSubmitting || employeeId.length < ID_MIN_LENGTH}
+            disabled={isSubmitting || employeeId.length < ID_MIN_LENGTH || !isValidEmployeeIdFormat(employeeId)}
             className={`w-full ${
               isEnglish ? 'p-5' : 'p-6'
             } text-base sm:text-xl font-bold rounded-xl shadow transition-all flex items-center justify-center min-h-[72px] ${
-              employeeId.length >= ID_MIN_LENGTH && !isSubmitting
+              employeeId.length >= ID_MIN_LENGTH && isValidEmployeeIdFormat(employeeId) && !isSubmitting
                 ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
@@ -396,7 +404,7 @@ function App() {
             {isSubmitting ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              <span className="truncate">{t('confirm')}</span>
+              <span>{t('confirm')}</span>
             )}
           </button>
         </div>
