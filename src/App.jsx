@@ -396,7 +396,8 @@ function App() {
           <button
             onClick={() => {
               if (employeeId.length >= ID_MIN_LENGTH && validateLocally(employeeId)) {
-                handleValidation(employeeId);
+                localStorage.setItem('employeeId', employeeId);
+                checkTodaySubmission(employeeId);
               }
             }}
             disabled={isSubmitting || employeeId.length < ID_MIN_LENGTH || !isValidEmployeeIdFormat(employeeId)}
