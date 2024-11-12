@@ -54,6 +54,7 @@ const translations = {
     orderTimeDetail: "平日前一天中午 12:00 至 當天早上 09:30",
     questionmanagement:"有問題請洽管理部",
     alreadySubmitted: "今日已經完成訂餐",
+    alreadytomorrowSubmit:"已經完成明日訂餐",
     yourChoice: "您今天已經選擇：",
     useOtherEmployeeId: "使用其他工號",
     selectAgain: "重新選擇",
@@ -85,6 +86,7 @@ const translations = {
     orderTimeDetail: "Weekdays Previous Day 12:00pm - Current Day 09:30am",
     questionmanagement:"For assistance, please contact the management department",
     alreadySubmitted: "Already Submitted Today",
+    alreadytomorrowSubmit:"Already Tomorrow Submitted",
     yourChoice: "Your choice today: ",
     useOtherEmployeeId: "Use Different ID",
     selectAgain: "Select Again",
@@ -222,6 +224,19 @@ function App() {
         return t('todayOrder'); // 今日訂餐
       } else {
         return t('tomorrowOrder'); // 明日訂餐
+      }
+    };
+    const getOrderSubmitTitle = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const currentTime = hours + minutes / 60;
+    
+      // 如果是凌晨0點到早上9:30
+      if (currentTime >= 0 && currentTime <= 9.5) {
+        return t('alreadySubmitted'); 
+      } else {
+        return t('alreadytomorrowSubmit'); // 明日訂餐
       }
     };
   // 檢查今天是否已經提交
@@ -467,11 +482,7 @@ function App() {
           <h1 className="text-3xl font-bold mb-2">{getOrderTitle()}</h1>
           <p className="text-xl text-gray-600">{t('employeeId')}: {employeeId}</p>
           <p className="text-lg text-gray-500 mb-4">
-            {/* 根據訂餐時段顯示對應的日期 */}
-            {new Date().getHours() >= 12 
-              ? new Date(Date.now() + 86400000).toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')
-              : new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')
-            }
+            {new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')}
           </p>
           
           {/* 素食選項 */}
@@ -629,7 +640,7 @@ function App() {
   const AlreadySubmittedScreen = () => (
     <div className="p-6 text-center">
       <div className="bg-yellow-100 p-8 rounded-2xl mb-8">
-        <h1 className="text-2xl font-bold mb-4">{t('alreadySubmitted')}</h1>
+        <h1 className="text-2xl font-bold mb-4">{getOrderSubmitTitle()}</h1>
         <p className="text-xl mb-2">{t('employeeId')}: {employeeId}</p>
         <p className="text-xl">
           {t('yourChoice')} {todayChoice === 'yes' ? t('wantOrderChoice') : t('noOrderChoice')}
