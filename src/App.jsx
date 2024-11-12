@@ -50,7 +50,7 @@ const translations = {
     noOrder: "不訂餐",
     outOfOrderTime: "非訂餐時間",
     orderTimeRange: "訂餐時間為：",
-    orderTimeDetail: "平日前一天晚上 21:00 至 當天早上 09:30",
+    orderTimeDetail: "平日前一天晚上 12:00 至 當天早上 09:30",
     questionmanagement:"有問題請洽管理部",
     alreadySubmitted: "今日已經完成訂餐",
     yourChoice: "您今天已經選擇：",
@@ -80,7 +80,7 @@ const translations = {
     noOrder: "No Order",
     outOfOrderTime: "Outside Order Hours",
     orderTimeRange: "Order Time:",
-    orderTimeDetail: "WeekdaysPrevious Day 21:00pm - Current Day 09:30am",
+    orderTimeDetail: "WeekdaysPrevious Day 12:00pm - Current Day 09:30am",
     questionmanagement:"For assistance, please contact the management department",
     alreadySubmitted: "Already Submitted Today",
     yourChoice: "Your choice today: ",
@@ -193,7 +193,7 @@ function App() {
       const day = now.getDay(); // 0是周日6周六
     
       // 如果現在是晚上9點以後
-      if (currentTime >= 21) {
+      if (currentTime >= 12) {
         // 檢查明天是否為工作日
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
