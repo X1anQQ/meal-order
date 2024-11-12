@@ -32,6 +32,7 @@ const callApi = async (data) => {
 // 首先建立語言包
 const translations = {
   zh: {
+    today:"今天日期:",
     enterPin: "請輸入密碼:",
     companyName: "公司名稱",
     backspace: "退格",
@@ -64,6 +65,7 @@ const translations = {
     noOrderChoice: "不訂餐"
   },
   en: {
+    today:"Today:",
     enterPin: "Enter PIN:",
     companyName: "Company Name",
     backspace: "Back",
@@ -482,7 +484,7 @@ function App() {
           <h1 className="text-3xl font-bold mb-2">{getOrderTitle()}</h1>
           <p className="text-xl text-gray-600">{t('employeeId')}: {employeeId}</p>
           <p className="text-lg text-gray-500 mb-4">
-            {new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')}
+            {t('today')}{new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US')}
           </p>
           
           {/* 素食選項 */}
