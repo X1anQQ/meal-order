@@ -57,6 +57,7 @@ const translations = {
     questionmanagement:"有問題請洽管理部",
     alreadySubmitted: "今日已經完成訂餐",
     alreadytomorrowSubmit:"已經完成明日訂餐",
+    alreadynextMondaySubmit:"已經完成下星期一訂餐",
     yourChoice: "您今天已經選擇：",
     useOtherEmployeeId: "使用其他工號",
     selectAgain: "重新選擇",
@@ -91,6 +92,7 @@ const translations = {
     questionmanagement:"For assistance, please contact the management department",
     alreadySubmitted: "Already Submitted Today",
     alreadytomorrowSubmit:"Already Tomorrow Submitted",
+    alreadynextMondaySubmit:"Already Next Monday Submitted",
     yourChoice: "Your choice today: ",
     useOtherEmployeeId: "Use Different ID",
     selectAgain: "Select Again",
@@ -200,8 +202,16 @@ function App() {
       const currentTime = hours + minutes / 60;
       const day = now.getDay(); // 0是周日6周六
     
-      // 如果現在是晚上9點以後
-      if (currentTime >= 12) {
+      // 如果是週五中午12點後
+      if (day === 5 && currentTime >= 12) {
+          // 檢查下週一是否為工作日
+        const nextMonday = new Date();
+        nextMonday.setDate(now.getDate() + 3); // 加3天到下週一
+        const nextMondayDay = nextMonday.getDay();
+        setIsOrderTime(nextMondayDay === 1); // 確保是週一且是工作日
+      }
+      // 如果現在是中午12點以後（非週五）
+      else if (currentTime >= 12) {
         // 檢查明天是否為工作日
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -240,12 +250,17 @@ function App() {
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
-    
+      const currentDay = now.getDay(); // 0是週日，6是週六
+      
+      // 如果是週五且在中午12點後
+      if (currentDay === 5 && currentTime >= 12) {
+        return t('alreadynextMondaySubmit');
+      }
       // 如果是凌晨0點到早上9:30
-      if (currentTime >= 0 && currentTime <= 9.5) {
+      else if (currentTime >= 0 && currentTime <= 9.5) {
         return t('alreadySubmitted'); 
       } else {
-        return t('alreadytomorrowSubmit'); // 明日訂餐
+        return t('alreadytomorrowSubmit'); // 明日訂餐 
       }
     };
   // 檢查今天是否已經提交
