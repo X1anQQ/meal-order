@@ -45,6 +45,7 @@ const translations = {
     changeEmployeeId: "更換工號",
     todayOrder: "今日訂餐",
     tomorrowOrder: "明日訂餐",
+    nextMondayOrder: "下星期一訂餐",
     employeeId: "工號",
     vegMeal: "素食餐點",
     setAsDefault: "將此次選擇設為預設習慣",
@@ -78,6 +79,7 @@ const translations = {
     changeEmployeeId: "Change ID",
     todayOrder: "Today's Order",
     tomorrowOrder: "Tomorrow's Order",
+    nextMondayOrder: "Next Monday's Order",
     employeeId: "Employee ID",
     vegMeal: "Vegetarian Meal",
     setAsDefault: "Set this choice as my default",
@@ -220,12 +222,17 @@ function App() {
       const hours = now.getHours();
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
+      const currentDay = now.getDay(); // 0是週日，6是週六
     
+      // 如果是週五且在中午12點後
+      if (currentDay === 5 && currentTime >= 12) {
+        return t('nextMondayOrder');
+      }
       // 如果是凌晨0點到早上9:30
-      if (currentTime >= 0 && currentTime <= 9.5) {
-        return t('todayOrder'); // 今日訂餐
+      else if (currentTime >= 0 && currentTime <= 9.5) {
+        return t('todayOrder');
       } else {
-        return t('tomorrowOrder'); // 明日訂餐
+        return t('tomorrowOrder');
       }
     };
     const getOrderSubmitTitle = () => {
