@@ -138,8 +138,21 @@ function App() {
     setLanguage(lang);
     localStorage.setItem('language', lang);
   };
-
+  // 工號規範化函數
+  const normalizeEmployeeId = (id) => {
+    if (!id) return id;
+    
+    const deptCode = id.charAt(0);
+    const numbers = id.slice(1);
+    const numValue = parseInt(numbers, 10);
+    
+    if (isNaN(numValue)) return id;
+    
+    // 返回規範化的工號（無前導零）
+    return deptCode + numValue;
+  };
   // 工號格式驗證函數
+  // 工號格式驗證函數優化
   const isValidEmployeeIdFormat = (id) => {
     if (!id || id.length < 2 || id.length > 3) return false;
     
@@ -153,9 +166,13 @@ function App() {
     const numValue = parseInt(numbers, 10);
     if (isNaN(numValue)) return false;
     
+    // 規範化工號進行比對
+    const normalizedId = normalizeEmployeeId(id);
+    
     // 檢查是否在允許的工號列表中
     return VALID_DEPARTMENTS[deptCode].includes(numValue);
   };
+
 
 
 
@@ -330,32 +347,47 @@ function App() {
     const [localError, setLocalError] = useState('');
 
     // 本地驗證函數
-  const validateLocally = (id) => {
-    // 如果長度還不夠，不顯示錯誤
-    if (id.length < ID_MIN_LENGTH) return false;
-    
-    if (!isValidEmployeeIdFormat(id)) {
-      setLocalError(t('invalidIdFormat'));
-      return false;
-    }
-    return true;
-  };
+    const validateLocally = (id) => {
+      setLocalError('');
+      
+      if (id.length < ID_MIN_LENGTH) return false;
+      
+      const normalizedId = normalizeEmployeeId(id);
+      const deptCode = normalizedId.charAt(0);
+      const numValue = parseInt(normalizedId.slice(1), 10);
+      
+      // 檢查是否為有效數字
+      if (isNaN(numValue)) {
+        setLocalError(t('invalidIdFormat'));
+        return false;
+      }
+      
+      // 檢查是否在有效範圍內
+      if (!VALID_DEPARTMENTS[deptCode]?.includes(numValue)) {
+        setLocalError(t('employeeNotFound'));
+        return false;
+      }
+      
+      return true;
+    };
 
   // 移除 debounce，改用直接驗證因為工號很短
+  // API 調用時也使用規範化的工號
   const handleValidation = async (id) => {
-    if (!validateLocally(id)) return;
+    const normalizedId = normalizeEmployeeId(id);
+    if (!validateLocally(normalizedId)) return;
     
     setIsSubmitting(true);
     try {
       const result = await callApi({
         action: 'checkEmployee',
-        employeeId: id
+        employeeId: normalizedId // 使用規範化後的工號
       });
-
+      
       if (result.success) {
         setErrorMessage('');
-        localStorage.setItem('employeeId', id);
-        checkTodaySubmission(id);
+        localStorage.setItem('employeeId', normalizedId); // 儲存規範化後的工號
+        checkTodaySubmission(normalizedId);
       } else {
         setLocalError(t('employeeNotFound'));
         setTimeout(() => {
@@ -366,7 +398,6 @@ function App() {
       }
     } catch (error) {
       setLocalError(t('systemError'));
-      setTimeout(() => setLocalError(''), 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -422,8 +453,14 @@ function App() {
                 // 檢查是否已達到最大長度
                 if (employeeId.length < ID_MAX_LENGTH) {
                   const newId = employeeId + num;
+                  const numberPart = newId.slice(1);
+                  const normalizedId = normalizeEmployeeId(newId);
+                  
+                  // 允許輸入，讓驗證函數來處理有效性
                   setEmployeeId(newId);
-                  validateLocally(newId); // 只做本地格式驗證
+                  if (newId.length >= ID_MIN_LENGTH) {
+                    validateLocally(newId);
+                  } // 只做本地格式驗證
                   }
               }}
               disabled={employeeId.length >= ID_MAX_LENGTH}
