@@ -371,36 +371,48 @@ function App() {
 
   // 移除 debounce，改用直接驗證因為工號很短
   // API 調用時也使用規範化的工號
-  const handleValidation = async (id) => {
-    const normalizedId = normalizeEmployeeId(id);
-    if (!validateLocally(normalizedId)) return;
-    
-    setIsSubmitting(true);
-    try {
-      const result = await callApi({
-        action: 'checkEmployee',
-        employeeId: normalizedId // 使用規範化後的工號
-      });
+    const handleValidation = async (id) => {
+      const normalizedId = normalizeEmployeeId(id);
+      if (!validateLocally(normalizedId)) return;
       
-      if (result.success) {
-        setErrorMessage('');
-        localStorage.setItem('employeeId', normalizedId); // 儲存規範化後的工號
-        checkTodaySubmission(normalizedId);
-      } else {
-        setLocalError(t('employeeNotFound'));
-        setTimeout(() => {
-          setEmployeeId('');
-          setShowLetterPad(true);
-          setLocalError('');
-        }, 2000);
+      setIsSubmitting(true);
+      try {
+        const result = await callApi({
+          action: 'checkEmployee',
+          employeeId: normalizedId // 使用規範化後的工號
+        });
+        
+        if (result.success) {
+          setErrorMessage('');
+          localStorage.setItem('employeeId', normalizedId); // 儲存規範化後的工號
+          checkTodaySubmission(normalizedId);
+        } else {
+          setLocalError(t('employeeNotFound'));
+          setTimeout(() => {
+            setEmployeeId('');
+            setShowLetterPad(true);
+            setLocalError('');
+          }, 2000);
+        }
+      } catch (error) {
+        setLocalError(t('systemError'));
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      setLocalError(t('systemError'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+    };
+    // 處理數字輸入
+    const handleNumberInput = (num) => {
+      if (employeeId.length < ID_MAX_LENGTH) {
+        const newId = employeeId + num;
+        // 立即規範化並更新顯示
+        const normalizedId = normalizeEmployeeId(newId);
+        setEmployeeId(normalizedId);
+        
+        if (normalizedId.length >= ID_MIN_LENGTH) {
+          validateLocally(normalizedId);
+        }
+      }
+    };
     return (
     <div className="text-center p-6">
       <h1 className="text-3xl font-bold mb-8">{t('id_en_tw')}</h1>
@@ -447,17 +459,7 @@ function App() {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <button
               key={num}
-              onClick={() => {
-                // 檢查是否已達到最大長度
-                if (employeeId.length < ID_MAX_LENGTH) {
-                  const newId = employeeId + num;
-                  setEmployeeId(newId);
-                  // 只進行本地驗證，不自動提交
-                  if (newId.length >= ID_MIN_LENGTH) {
-                    validateLocally(newId);
-                  }
-                }
-              }}
+              onClick={() => handleNumberInput(num)}
               disabled={employeeId.length >= ID_MAX_LENGTH}
               className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
             >
@@ -480,15 +482,7 @@ function App() {
           </button>
           {/* 0 鍵 */}
           <button
-            onClick={() => {
-              if (employeeId.length < ID_MAX_LENGTH) {
-                const newId = employeeId + '0';
-                setEmployeeId(newId);
-                if (newId.length >= ID_MIN_LENGTH) {
-                  validateLocally(newId);
-                }
-              }
-            }}
+            onClick={() => handleNumberInput(0)}
             disabled={employeeId.length >= ID_MAX_LENGTH}
             className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
           >
