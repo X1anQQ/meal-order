@@ -237,7 +237,7 @@ function App() {
         setIsOrderTime(tomorrowDay > 0 && tomorrowDay < 6);
       } 
       // 如果現在是早上9:30以前
-      else if (currentTime <= 9.5) {
+      else if (currentTime <= 10.5) {
         setIsOrderTime(day > 0 && day < 6);
       } 
       // 其他時間都不是訂餐時間
@@ -257,7 +257,7 @@ function App() {
         return t('nextMondayOrder');
       }
       // 如果是凌晨0點到早上9:30
-      else if (currentTime >= 0 && currentTime <= 9.5) {
+      else if (currentTime >= 0 && currentTime <= 10.5) {
         return t('todayOrder');
       } else {
         return t('tomorrowOrder');
@@ -275,7 +275,7 @@ function App() {
         return t('alreadynextMondaySubmit');
       }
       // 如果是凌晨0點到早上9:30
-      else if (currentTime >= 0 && currentTime <= 9.5) {
+      else if (currentTime >= 0 && currentTime <= 10.5) {
         return t('alreadySubmitted'); 
       } else {
         return t('alreadytomorrowSubmit'); // 明日訂餐 
