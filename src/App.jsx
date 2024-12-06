@@ -155,19 +155,17 @@ function App() {
   // 工號格式驗證函數優化
   const isValidEmployeeIdFormat = (id) => {
     if (!id || id.length < 2 || id.length > 3) return false;
-    
-    const deptCode = id.charAt(0);
-    const numbers = id.slice(1);
+  
+    const normalizedId = normalizeEmployeeId(id);
+    const deptCode = normalizedId.charAt(0);
+    const numbers = normalizedId.slice(1);
+    const numValue = parseInt(numbers, 10);
     
     // 檢查部門代碼是否有效
     if (!VALID_DEPARTMENTS[deptCode]) return false;
     
-    // 轉換數字部分為整數
-    const numValue = parseInt(numbers, 10);
+    // 檢查數字部分
     if (isNaN(numValue)) return false;
-    
-    // 規範化工號進行比對
-    const normalizedId = normalizeEmployeeId(id);
     
     // 檢查是否在允許的工號列表中
     return VALID_DEPARTMENTS[deptCode].includes(numValue);
@@ -453,23 +451,12 @@ function App() {
                 // 檢查是否已達到最大長度
                 if (employeeId.length < ID_MAX_LENGTH) {
                   const newId = employeeId + num;
-                  const numberPart = newId.slice(1);
-                  const numValue = parseInt(numberPart, 10);
-                  
-                  // 只有輸入完整工號才進行驗證
                   setEmployeeId(newId);
+                  // 只進行本地驗證，不自動提交
                   if (newId.length >= ID_MIN_LENGTH) {
                     validateLocally(newId);
-                    // 避免 A0 自動觸發確認
-                    if (newId.length === 2 && numValue === 0) {
-                      return;
-                    }
-                    // 當長度達到 MAX_LENGTH 時才自動觸發驗證
-                    if (newId.length === ID_MAX_LENGTH) {
-                      handleValidation(newId);
-                    }
                   }
-                  }
+                }
               }}
               disabled={employeeId.length >= ID_MAX_LENGTH}
               className="p-6 text-2xl font-bold rounded-xl bg-white shadow hover:bg-gray-50 disabled:opacity-50 transition-colors"
@@ -498,7 +485,7 @@ function App() {
                 const newId = employeeId + '0';
                 setEmployeeId(newId);
                 if (newId.length >= ID_MIN_LENGTH) {
-                  handleValidation(newId);
+                  validateLocally(newId);
                 }
               }
             }}
