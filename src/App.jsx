@@ -454,13 +454,21 @@ function App() {
                 if (employeeId.length < ID_MAX_LENGTH) {
                   const newId = employeeId + num;
                   const numberPart = newId.slice(1);
-                  const normalizedId = normalizeEmployeeId(newId);
+                  const numValue = parseInt(numberPart, 10);
                   
-                  // 允許輸入，讓驗證函數來處理有效性
+                  // 只有輸入完整工號才進行驗證
                   setEmployeeId(newId);
                   if (newId.length >= ID_MIN_LENGTH) {
                     validateLocally(newId);
-                  } // 只做本地格式驗證
+                    // 避免 A0 自動觸發確認
+                    if (newId.length === 2 && numValue === 0) {
+                      return;
+                    }
+                    // 當長度達到 MAX_LENGTH 時才自動觸發驗證
+                    if (newId.length === ID_MAX_LENGTH) {
+                      handleValidation(newId);
+                    }
+                  }
                   }
               }}
               disabled={employeeId.length >= ID_MAX_LENGTH}
@@ -503,8 +511,7 @@ function App() {
           <button
             onClick={() => {
               if (employeeId.length >= ID_MIN_LENGTH && validateLocally(employeeId)) {
-                localStorage.setItem('employeeId', employeeId);
-                checkTodaySubmission(employeeId);
+                handleValidation(employeeId);
               }
             }}
             disabled={isSubmitting || employeeId.length < ID_MIN_LENGTH || !isValidEmployeeIdFormat(employeeId)}
