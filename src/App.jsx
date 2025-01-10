@@ -740,10 +740,20 @@ function App() {
       </button>
     </div>
   );
-
+  const LanguageToggleButton = () => (
+    <button
+      onClick={() => setAndSaveLanguage(language === 'zh' ? 'en' : 'zh')}
+      className="fixed top-4 right-4 bg-white shadow-md rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-50 transition-colors z-50"
+    >
+      <span className="text-lg font-bold">
+        {language === 'zh' ? 'EN' : '中'}
+      </span>
+    </button>
+  );
   // 返回主要渲染
   return (
     <div className="max-w-2xl mx-auto min-h-screen bg-gray-50 flex items-center justify-center">
+      <LanguageToggleButton />
       <div className="w-full">
         {step === 'loading' && <LoadingScreen />}
         {step === 'pin' && <PinInputScreen />}
