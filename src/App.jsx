@@ -272,7 +272,7 @@ function App() {
       const tomorrowDay = tomorrow.getDay();
 
       // **補班日處理**
-      if (checkMakeupWorkday(tomorrowDay)) {
+      if (checkMakeupWorkday(tomorrow)) {
         return t('tomorrowOrder');
       }
       
