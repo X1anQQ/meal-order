@@ -254,9 +254,8 @@ function App() {
       }
     };
     const checkMakeupWorkday = (date) => {
-      const makeupDays = ["2025/02/08"]; // 根據實際補班日更新
+      const makeupDays = ["2025/02/8"]; // 根據實際補班日更新
       const formattedDate = date.toISOString().split("T")[0]; // 格式化為 YYYY/MM/DD
-      console.log("檢查日期:", formattedDate);
       return makeupDays.includes(formattedDate);
     };
 
