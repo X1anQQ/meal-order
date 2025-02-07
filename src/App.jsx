@@ -218,7 +218,7 @@ function App() {
       const currentTime = hours + minutes / 60;
       const day = now.getDay(); // 0是周日6周六
       const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setDate(now.getDate() + 1);
 
       // 檢查是否為補班日
       const isMakeupWorkday = checkMakeupWorkday(tomorrow);
@@ -267,7 +267,7 @@ function App() {
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
       const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setDate(now.getDate() + 1);
 
       // **補班日處理**
       if (checkMakeupWorkday(tomorrow)) {
@@ -291,7 +291,7 @@ function App() {
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
       const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setDate(now.getDate() + 1);
 
       // **補班日的特殊處理**
       if (checkMakeupWorkday(tomorrow)) {
