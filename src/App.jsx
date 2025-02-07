@@ -269,7 +269,6 @@ function App() {
       const currentDay = now.getDay(); // 0是週日，6是週六
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowDay = tomorrow.getDay();
 
       // **補班日處理**
       if (checkMakeupWorkday(tomorrow)) {
@@ -295,10 +294,9 @@ function App() {
       const currentDay = now.getDay(); // 0是週日，6是週六
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowDay = tomorrow.getDay();
 
       // **補班日的特殊處理**
-      if (checkMakeupWorkday(tomorrowDay)) {
+      if (checkMakeupWorkday(tomorrow)) {
         return t('alreadySubmitted'); // 依照平日邏輯顯示
       }
 
