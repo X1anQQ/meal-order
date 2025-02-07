@@ -294,7 +294,7 @@ function App() {
 
       // **補班日的特殊處理**
       if (checkMakeupWorkday(tomorrow)) {
-        return t('alreadySubmitted'); // 依照平日邏輯顯示
+        return t('alreadytomorrowSubmit'); // 依照平日邏輯顯示
       }
 
       // 如果是週五且在中午12點後
