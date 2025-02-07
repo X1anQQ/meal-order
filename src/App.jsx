@@ -220,7 +220,7 @@ function App() {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const tomorrowDay = tomorrow.getDay();
-      
+
       // 檢查是否為補班日
       const isMakeupWorkday = checkMakeupWorkday(tomorrowDay);
 
@@ -257,6 +257,7 @@ function App() {
     const checkMakeupWorkday = (date) => {
       const makeupDays = ["2025/02/08"]; // 根據實際補班日更新
       const formattedDate = date.toISOString().split("T")[0]; // 格式化為 YYYY/MM/DD
+      console.log("檢查日期:", formattedDate);
       return makeupDays.includes(formattedDate);
     };
 
@@ -272,7 +273,7 @@ function App() {
 
       // **補班日處理**
       if (checkMakeupWorkday(tomorrowDay)) {
-        return t('todayOrder');
+        return t('tomorrowOrder');
       }
       
       // 如果是週五且在中午12點後
