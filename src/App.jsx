@@ -219,7 +219,7 @@ function App() {
       const day = now.getDay(); // 0是周日6周六
       
       // 檢查是否為補班日
-      const isMakeupWorkday = checkMakeupWorkday(now);
+      const isMakeupWorkday = checkMakeupWorkday(now.getDate() + 1);
 
       if (isMakeupWorkday) {
         setIsOrderTime(true);
@@ -265,7 +265,7 @@ function App() {
       const currentDay = now.getDay(); // 0是週日，6是週六
     
        // **補班日處理**
-      if (checkMakeupWorkday(now)) {
+      if (checkMakeupWorkday(now.getDate() + 1)) {
         return t('todayOrder');
       }
       
@@ -288,7 +288,7 @@ function App() {
       const currentDay = now.getDay(); // 0是週日，6是週六
       
       // **補班日的特殊處理**
-      if (checkMakeupWorkday(now)) {
+      if (checkMakeupWorkday(now.getDate() + 1)) {
         return t('alreadySubmitted'); // 依照平日邏輯顯示
       }
 
