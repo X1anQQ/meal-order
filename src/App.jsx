@@ -229,7 +229,7 @@ function App() {
       }
 
       // 如果是週五中午12點後
-      else if (day === 5 && currentTime >= 12) {
+      if (day === 5 && currentTime >= 12) {
           // 檢查下週一是否為工作日
         const nextMonday = new Date();
         nextMonday.setDate(now.getDate() + 3); // 加3天到下週一
@@ -273,7 +273,7 @@ function App() {
         return t('tomorrowOrder');
       }
       // 如果是週五且在中午12點後
-      else if (currentDay === 5 && currentTime >= 12 ) {
+      if (currentDay === 5 && currentTime >= 12 ) {
         return t('nextMondayOrder');
       }
       // 如果是凌晨0點到早上9:30
@@ -298,7 +298,7 @@ function App() {
       }
 
       // 如果是週五且在中午12點後
-      else if (currentDay === 5 && currentTime >= 12) {
+      if (currentDay === 5 && currentTime >= 12) {
         return t('alreadynextMondaySubmit');
       }
       // 如果是凌晨0點到早上9:30
