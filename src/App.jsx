@@ -210,6 +210,13 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
+
+    const checkMakeupWorkday = (date) => {
+      const makeupDays = ["2025/02/08"]; // 根據實際補班日更新
+      const formattedDate = date.toISOString().split("T")[0].replace(/-/g, "/"); // 格式化為 YYYY/MM/DD
+      return makeupDays.includes(formattedDate);
+    };
+
     // 新增這個函數
     const checkOrderTime = () => {
       const now = new Date();
@@ -221,9 +228,8 @@ function App() {
       tomorrow.setDate(now.getDate() + 1);
 
       // 檢查是否為補班日
-      const isMakeupWorkday = checkMakeupWorkday(tomorrow);
 
-      if (isMakeupWorkday) {
+      if (checkMakeupWorkday(tomorrow)) {
         setIsOrderTime(true);
         return;
       }
@@ -253,11 +259,7 @@ function App() {
         setIsOrderTime(false);
       }
     };
-    const checkMakeupWorkday = (date) => {
-      const makeupDays = ["2025/02/08"]; // 根據實際補班日更新
-      const formattedDate = date.toISOString().split("T")[0].replace(/-/g, "/"); // 格式化為 YYYY/MM/DD
-      return makeupDays.includes(formattedDate);
-    };
+    
 
     const getOrderTitle = () => {
       const now = new Date();
