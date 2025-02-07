@@ -217,7 +217,15 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const day = now.getDay(); // 0是周日6周六
-    
+      
+      // 檢查是否為補班日
+      const isMakeupWorkday = checkMakeupWorkday(now);
+
+      if (isMakeupWorkday) {
+        setIsOrderTime(true);
+        return;
+      }
+
       // 如果是週五中午12點後
       if (day === 5 && currentTime >= 12) {
           // 檢查下週一是否為工作日
@@ -243,6 +251,12 @@ function App() {
         setIsOrderTime(false);
       }
     };
+    const checkMakeupWorkday = (date) => {
+      const makeupDays = ["2025/02/08"]; // 根據實際補班日更新
+      const formattedDate = date.toISOString().split("T")[0]; // 格式化為 YYYY/MM/DD
+      return makeupDays.includes(formattedDate);
+    };
+
     const getOrderTitle = () => {
       const now = new Date();
       const hours = now.getHours();
@@ -250,6 +264,11 @@ function App() {
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
     
+       // **補班日處理**
+      if (checkMakeupWorkday(now)) {
+        return t('todayOrder');
+      }
+      
       // 如果是週五且在中午12點後
       if (currentDay === 5 && currentTime >= 12) {
         return t('nextMondayOrder');
@@ -268,6 +287,11 @@ function App() {
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
       
+      // **補班日的特殊處理**
+      if (checkMakeupWorkday(now)) {
+        return t('alreadySubmitted'); // 依照平日邏輯顯示
+      }
+
       // 如果是週五且在中午12點後
       if (currentDay === 5 && currentTime >= 12) {
         return t('alreadynextMondaySubmit');
