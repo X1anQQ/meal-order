@@ -245,10 +245,7 @@ function App() {
       // 如果現在是中午12點以後（非週五）
       else if (currentTime >= 12) {
         // 檢查明天是否為工作日
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const tomorrowDay = tomorrow.getDay();
-        setIsOrderTime(tomorrowDay > 0 && tomorrowDay < 6);
+        setIsOrderTime(tomorrow > 0 && tomorrow < 6);
       } 
       // 如果現在是早上9:30以前
       else if (currentTime <= 9.5) {
