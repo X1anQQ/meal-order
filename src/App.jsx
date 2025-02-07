@@ -219,10 +219,9 @@ function App() {
       const day = now.getDay(); // 0是周日6周六
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowDay = tomorrow.getDay();
 
       // 檢查是否為補班日
-      const isMakeupWorkday = checkMakeupWorkday(tomorrowDay);
+      const isMakeupWorkday = checkMakeupWorkday(tomorrow);
 
       if (isMakeupWorkday) {
         setIsOrderTime(true);
