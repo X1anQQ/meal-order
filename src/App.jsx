@@ -217,9 +217,12 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const day = now.getDay(); // 0是周日6周六
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDay = tomorrow.getDay();
       
       // 檢查是否為補班日
-      const isMakeupWorkday = checkMakeupWorkday(now);
+      const isMakeupWorkday = checkMakeupWorkday(tomorrowDay);
 
       if (isMakeupWorkday) {
         setIsOrderTime(true);
@@ -263,9 +266,12 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
-    
-       // **補班日處理**
-      if (checkMakeupWorkday(now)) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDay = tomorrow.getDay();
+
+      // **補班日處理**
+      if (checkMakeupWorkday(tomorrowDay)) {
         return t('todayOrder');
       }
       
@@ -286,9 +292,12 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
-      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowDay = tomorrow.getDay();
+
       // **補班日的特殊處理**
-      if (checkMakeupWorkday(now)) {
+      if (checkMakeupWorkday(tomorrowDay)) {
         return t('alreadySubmitted'); // 依照平日邏輯顯示
       }
 
