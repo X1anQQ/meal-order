@@ -224,13 +224,16 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const day = now.getDay(); // 0是周日6周六
-      const tomorrow = new Date();
+      const tomorrow = new Date(now);
       tomorrow.setDate(now.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const tomorrowDay = tomorrow.getDay();
 
       // 檢查是否為補班日
 
       if (checkMakeupWorkday(tomorrow)) {
         setIsOrderTime(true);
+        return;
       }
 
       // 如果是週五中午12點後
@@ -244,7 +247,7 @@ function App() {
       // 如果現在是中午12點以後（非週五）
       else if (currentTime >= 12) {
         // 檢查明天是否為工作日
-        setIsOrderTime(tomorrow > 0 && tomorrow < 6);
+        setIsOrderTime(tomorrowDay > 0 && tomorrowDay < 6);
       } 
       // 如果現在是早上9:30以前
       else if (currentTime <= 9.5) {
@@ -263,8 +266,10 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
-      const tomorrow = new Date();
+      const tomorrow = new Date(now);
       tomorrow.setDate(now.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const tomorrowDay = tomorrow.getDay();
 
       // **補班日處理**
       if (checkMakeupWorkday(tomorrow)) {
@@ -287,8 +292,10 @@ function App() {
       const minutes = now.getMinutes();
       const currentTime = hours + minutes / 60;
       const currentDay = now.getDay(); // 0是週日，6是週六
-      const tomorrow = new Date();
+      const tomorrow = new Date(now);
       tomorrow.setDate(now.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const tomorrowDay = tomorrow.getDay();
 
       // **補班日的特殊處理**
       if (checkMakeupWorkday(tomorrow)) {
