@@ -231,7 +231,6 @@ function App() {
 
       if (checkMakeupWorkday(tomorrow)) {
         setIsOrderTime(true);
-        return;
       }
 
       // 如果是週五中午12點後
@@ -303,7 +302,8 @@ function App() {
       // 如果是凌晨0點到早上9:30
       else if (currentTime >= 0 && currentTime <= 9.5) {
         return t('alreadySubmitted'); 
-      } else {
+      } 
+      else {
         return t('alreadytomorrowSubmit'); // 明日訂餐 
       }
     };
