@@ -280,7 +280,7 @@ function App() {
         return t('nextMondayOrder');
       }
       // 如果是凌晨0點到早上9:30
-      else if (currentTime >= 0 && currentTime <= 11.5) {
+      else if (currentTime >= 0 && currentTime <= 10.5) {
         return t('todayOrder');
       } else {
         return t('tomorrowOrder');
